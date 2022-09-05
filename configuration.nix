@@ -144,15 +144,16 @@
   # Enable sound.
   sound.enable = true;
   # hardware
-  #hardware.bluetooth.enable = true;
   hardware.pulseaudio.enable = true;
+
   hardware.bluetooth = {
 	enable = true;
 	powerOnBoot = true;
 	settings = {
 		General = {
 			Name = "Zits";
-			ControllerMode= "dual";
+			ControllerMode = "dual";
+			FastConnectable = "true";
 		};
 		Policy = {
 			AutoEnable = "true";
