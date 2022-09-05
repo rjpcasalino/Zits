@@ -11,6 +11,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" ]; 
+  # this is for wifi and bluetooth antenna
   boot.extraModulePackages = with config.boot.kernelPackages; [ rtl88x2bu ];
   boot.extraModprobeConfig = ''
     options iwlwifi power_save=N
@@ -22,6 +23,7 @@
   networking.wireless.userControlled.enable = true;
   networking.wireless.iwd.enable = false;
   networking.wireless.scanOnLowSignal = false;
+  # FIXME
   networking.wireless.networks = {
 	Sulaco = {
 	 psk = "duffman2415";  # (password will be written to /nix/store!)
@@ -86,7 +88,8 @@
 
   nix = {
    package = pkgs.nixUnstable;
-   autoOptimiseStore = true;
+   #autoOptimiseStore = true;
+   settings.auto-optimise-store = true;
    # settings.substituters = [ "http://oystercatcher.home.arpa:5000" ];
    extraOptions = ''
     experimental-features = nix-command flakes
@@ -133,8 +136,6 @@
    services.openssh.enable = true;
    services.openssh.forwardX11 = false;
   
-  # Enable the blueman daemon.
-   services.blueman.enable = false;
   # Keybase
    services.keybase.enable = true;
 
@@ -157,6 +158,10 @@
 		};
 		Policy = {
 			AutoEnable = "true";
+		};
+		LE = {
+			EnableAdvMonInterleaveScan = "true";
+
 		};
 
 	};
