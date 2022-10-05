@@ -198,7 +198,7 @@
   users.users.rjpc = {
     isNormalUser = true;
     extraGroups = [ "cdrom" "wheel" "audio" "docker" ];
-    shell = "${pkgs.bashInteractive_5}${pkgs.bashInteractive_5.shellPath}";
+    shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
   };
 
   system.stateVersion = "22.11";
