@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, home-manager, ... }:
 
 {
   imports =
@@ -198,6 +198,10 @@
   users.users.rjpc = {
     isNormalUser = true;
     extraGroups = [ "cdrom" "wheel" "audio" "docker" ];
+    shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
+  };
+  users.users.jdoe = {
+    isNormalUser = true;
     shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
   };
 
