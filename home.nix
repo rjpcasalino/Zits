@@ -3,8 +3,8 @@
 {
   # Home Manager needs a bit of information about you and the
   # paths it should manage.
-  home.username = "jdoe";
-  home.homeDirectory = "/home/jdoe";
+  home.username = "truman";
+  home.homeDirectory = "/home/truman";
   home.packages = [
     pkgs.fortune
   ];
@@ -21,4 +21,8 @@
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
+  # this allows for a gui login? why
+  xdg.enable = true;
+  xsession.enable = false;
+  fonts.fontconfig.enable = true;
 }

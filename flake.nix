@@ -9,6 +9,7 @@
     };
   };
 
+  # Accepting unexpected attributes in argument set i.e., @
   outputs = inputs@{ self, nixpkgs, home-manager, ... }: {
 
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
@@ -19,7 +20,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.jdoe = import ./home.nix;
+          home-manager.users.truman = import ./home.nix;
 
           # Optionally, use home-manager.extraSpecialArgs to pass
           # arguments to home.nix

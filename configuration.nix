@@ -1,4 +1,4 @@
-{ config, pkgs, home-manager, ... }:
+{ config, pkgs, ... }:
 
 {
   imports =
@@ -25,12 +25,18 @@
   networking.wireless.iwd.enable = false;
   networking.wireless.scanOnLowSignal = false;
   # FIXME
+  # still feels dirty
+  # best guide: https://mcwhirter.com.au/craige/blog/2019/Setting_Up_Wireless_Networking_with_NixOS/
   networking.wireless.networks = {
     Sulaco = {
-      psk = "duffman2415"; # (password will be written to /nix/store!)
+      pskRaw = "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9"; # (password will be written to /nix/store!)
     };
   };
   networking.networkmanager.enable = false;
+  networking.extraHosts =
+  ''
+    172.17.0.1 host.docker.internal
+  '';
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
@@ -107,6 +113,7 @@
     vim
     vlc
     wget
+    minikube
     neofetch
     firefox
     git
@@ -116,12 +123,10 @@
     libbluray
     libaacs
     synergy
-    vscode
     # keybase
     kbfs
     keybase
     keybase-gui
-    minikube
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -185,6 +190,7 @@
     exportConfiguration = true;
     displayManager.startx.enable = true;
     windowManager.cwm.enable = true;
+    windowManager.i3.enable = true;
     videoDrivers = [ "nvidia" ];
   };
   # services.xserver.xkbOptions = "eurosign:e";
@@ -192,17 +198,19 @@
   virtualisation.docker.enable = true;
   virtualisation.podman.enable = false;
   virtualisation.libvirtd.enable = false;
-  virtualisation.virtualbox.host.enable = true;
+  virtualisation.virtualbox.host.enable = false;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjpc = {
     isNormalUser = true;
-    extraGroups = [ "cdrom" "wheel" "audio" "docker" ];
+    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" ];
     shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
   };
-  users.users.jdoe = {
+
+  # this should be used for work stuff moving forward
+  users.users.truman= {
     isNormalUser = true;
-    shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
+    shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
   };
 
   system.stateVersion = "22.11";
