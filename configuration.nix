@@ -32,6 +32,7 @@
       pskRaw = "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9"; # (password will be written to /nix/store!)
     };
   };
+  #environment.etc.hosts.mode = "0600";
   networking.networkmanager.enable = false;
   networking.extraHosts =
   ''
@@ -105,10 +106,12 @@
   };
 
   environment.systemPackages = with pkgs; [
+    awscli2
     bluez-tools
     curl
     cwm
     doas
+    direnv
     ed
     vim
     vlc
@@ -118,11 +121,14 @@
     firefox
     git
     go
+    qemu
+    scrot
     screen
     xscreensaver
     libbluray
     libaacs
     synergy
+    jq
     # keybase
     kbfs
     keybase
@@ -199,11 +205,12 @@
   virtualisation.podman.enable = false;
   virtualisation.libvirtd.enable = false;
   virtualisation.virtualbox.host.enable = false;
+  virtualisation.lxd.enable = false;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjpc = {
     isNormalUser = true;
-    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" ];
+    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" "lxd" ];
     shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
   };
 
