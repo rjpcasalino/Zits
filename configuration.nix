@@ -45,7 +45,7 @@
   networking.useDHCP = false;
   networking.interfaces.enp9s0.useDHCP = true;
   networking.interfaces.wlp4s0.useDHCP = true;
-  networking.nameservers = [ "192.168.0.18" ];
+  networking.nameservers = [ "192.168.0.19" ];
   networking.enableIPv6 = false;
 
   # Open ports in the firewall.
@@ -119,11 +119,16 @@
     minikube
     neofetch
     firefox
+    fd
+    google-chrome
     git
     go
     qemu
+    ripgrep
     scrot
     screen
+    spotify
+    polybar
     xscreensaver
     libbluray
     libaacs
@@ -153,8 +158,17 @@
   services.openssh.enable = true;
   services.openssh.forwardX11 = false;
 
-  # Keybase
+  # Keybase # FIXME? Not working?
   services.keybase.enable = true;
+
+  # Android
+  programs.adb.enable = true;
+
+  programs.bash.promptInit =  ''
+
+      PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
+
+'';
 
   # Enable CUPS to print documents.
   services.printing.enable = false;
@@ -210,7 +224,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjpc = {
     isNormalUser = true;
-    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" "lxd" ];
+    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" "lxd" "adbusers" ];
     shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
   };
 
