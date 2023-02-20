@@ -171,7 +171,8 @@
 '';
 
   # Enable CUPS to print documents.
-  services.printing.enable = false;
+  services.printing.enable = true;
+  services.printing.drivers = [ pkgs.hplip ];
 
   # Enable sound.
   sound.enable = true;
@@ -187,6 +188,7 @@
         Name = "Zits";
         ControllerMode = "dual";
         FastConnectable = "true";
+        Experimental = "true";
       };
       Policy = {
         AutoEnable = "true";
