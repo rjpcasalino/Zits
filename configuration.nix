@@ -18,6 +18,7 @@
     options iwlwifi power_save=N
     options iwldvm force_cam=Y
   '';
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
   networking.hostName = "zits";
   networking.wireless.enable = true; # Enables wireless support via wpa_supplicant.
@@ -99,7 +100,6 @@
     package = pkgs.nixUnstable;
     #autoOptimiseStore = true;
     settings.auto-optimise-store = true;
-    # settings.substituters = [ "http://oystercatcher.home.arpa:5000" ];
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
@@ -121,9 +121,11 @@
     firefox
     fd
     google-chrome
+    microsoft-edge
     git
     go
     qemu
+    oneko
     ripgrep
     scrot
     screen
@@ -172,6 +174,17 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+  services.avahi.enable = true;
+  # Enable SANE for scanning
+  hardware.sane.enable = true;
+  services.avahi.nssmdns = true;
+  # Needed since this is an HP scanner 
+  # hardware.sane.extraBackends = [ pkgs.hplipWithPlugin ];
+  # use below as above does not seem to scan but sees scanner
+  # see: https://github.com/alexpevzner/sane-airscan
+  hardware.sane.extraBackends = [ pkgs.sane-airscan ];
+  # for a WiFi printer
+  services.avahi.openFirewall = true;
   services.printing.drivers = [ pkgs.hplip ];
 
   # Enable sound.
@@ -226,7 +239,7 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjpc = {
     isNormalUser = true;
-    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" "lxd" "adbusers" ];
+    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" "lxd" "adbusers" "scanner" "lp" ];
     shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
   };
 
