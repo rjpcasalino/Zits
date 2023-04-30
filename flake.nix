@@ -38,7 +38,7 @@
 
           # Network configuration.
           networking.useDHCP = false;
-          networking.firewall.allowedTCPPorts = [ 80 ];
+          # networking.firewall.allowedTCPPorts = [ 80 ];
 
           # Enable a web server.
           services.httpd = {
