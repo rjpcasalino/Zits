@@ -5,9 +5,7 @@
   # paths it should manage.
   home.username = "truman";
   home.homeDirectory = "/home/truman";
-  home.packages = [
-    pkgs.fortune
-  ];
+  home.packages = [ pkgs.fortune ];
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage
@@ -23,6 +21,5 @@
   programs.home-manager.enable = true;
   # this allows for a gui login? why
   xdg.enable = true;
-  xsession.enable = false;
   fonts.fontconfig.enable = true;
 }

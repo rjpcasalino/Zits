@@ -11,9 +11,11 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
+
+  boot.kernelPackages = pkgs.linuxPackages_6_1;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" ];
   # this is for wifi and bluetooth antenna
-  boot.extraModulePackages = with config.boot.kernelPackages; [ rtl88x2bu ];
+  boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
   boot.extraModprobeConfig = ''
     options iwlwifi power_save=N
     options iwldvm force_cam=Y
