@@ -12,7 +12,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_6_1;
+  boot.kernelPackages = pkgs.linuxPackages_6_2;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" ];
   # this is for wifi and bluetooth antenna
   boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
@@ -35,6 +35,10 @@
       pskRaw = "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9"; # (password will be written to /nix/store!)
     };
   };
+  networking.nat.enable = false;
+  # networking.nat.internalInterfaces = [ ];
+  # networking.nat.externalInterface = "enp9s0";
+
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
   environment.etc.hosts.mode = "0644";
   networking.networkmanager.enable = false;
@@ -47,7 +51,7 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.enp9s0.useDHCP = true;
+  networking.interfaces.enp9s0.useDHCP = false;
   networking.interfaces.wlp4s0.useDHCP = true;
   networking.nameservers = [ "192.168.0.19" ];
   networking.enableIPv6 = true;
@@ -55,7 +59,7 @@
   # Open ports in the firewall.
   # only synergy thus far...
   networking.firewall.allowedTCPPorts = [ 24800 51413 ];
-  # networking.firewall.allowedUDPPorts = [ 137 138 ];
+  # networking.firewall.allowedUDPPorts = [ 53 ];
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
   # services.resolved.enable = true;
@@ -141,10 +145,8 @@
     libaacs
     synergy
     jq
-    # keybase
-    kbfs
-    keybase
-    keybase-gui
+    mpv
+    feh
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -163,7 +165,7 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
-  services.openssh.forwardX11 = false;
+  services.openssh.settings.X11Forwarding = false;
 
   # Keybase # FIXME? Not working?
   services.keybase.enable = true;
