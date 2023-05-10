@@ -161,16 +161,16 @@
   # steam
   # FIXME
   # some out error...ugh
-  programs.steam.enable = false;
+  programs.steam.enable = true;
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.settings.X11Forwarding = false;
 
-  # Keybase # FIXME? Not working?
-  services.keybase.enable = true;
+  # keybase service
+  services.keybase.enable = false;
 
-  # Android
+  # Android stuff
   programs.adb.enable = true;
 
   programs.bash.promptInit =  ''
