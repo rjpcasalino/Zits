@@ -22,6 +22,5 @@
   # this allows for a gui login? why
   xdg.enable = true;
   xsession.enable = true;
-  xsession.windowManager.command = "${pkgs.gnome.gnome-session}/bin/gnome-session";
   fonts.fontconfig.enable = true;
 }
