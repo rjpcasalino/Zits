@@ -158,26 +158,21 @@
   #   pinentryFlavor = "gnome3";
   # };
 
-  # steam
-  # FIXME
-  # some out error...ugh
-  programs.steam.enable = true;
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-  services.openssh.settings.X11Forwarding = false;
-
-  # keybase service
-  services.keybase.enable = false;
-
   # Android stuff
   programs.adb.enable = true;
-
+  # steam
+  programs.steam.enable = true;
   programs.bash.promptInit =  ''
 
       PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
 
 '';
+
+  # Enable the OpenSSH daemon.
+  services.openssh.enable = true;
+  services.openssh.settings.X11Forwarding = false;
+  # keybase service
+  services.keybase.enable = false;
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -196,10 +191,7 @@
   services.avahi.openFirewall = true;
   services.printing.drivers = [ pkgs.hplip ];
 
-  # Enable sound.
   sound.enable = true;
-
-  # hardware
   hardware.pulseaudio.enable = true;
 
   hardware.bluetooth = {
@@ -241,11 +233,10 @@
 
   virtualisation.docker.enable = true;
   virtualisation.podman.enable = false;
-  virtualisation.libvirtd.enable = true;
+  virtualisation.libvirtd.enable = false;
   virtualisation.virtualbox.host.enable = false;
   virtualisation.lxd.enable = false;
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.rjpc = {
     isNormalUser = true;
     extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" "lxd" "adbusers" "scanner" "lp" ];
