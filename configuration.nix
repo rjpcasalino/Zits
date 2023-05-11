@@ -1,11 +1,10 @@
 { config, pkgs, ... }:
 
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -23,7 +22,8 @@
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
 
   networking.hostName = "zits";
-  networking.wireless.enable = true; # Enables wireless support via wpa_supplicant.
+  networking.wireless.enable =
+    true; # Enables wireless support via wpa_supplicant.
   networking.wireless.userControlled.enable = true;
   networking.wireless.iwd.enable = false;
   networking.wireless.scanOnLowSignal = false;
@@ -32,7 +32,8 @@
   # best guide: https://mcwhirter.com.au/craige/blog/2019/Setting_Up_Wireless_Networking_with_NixOS/
   networking.wireless.networks = {
     Sulaco = {
-      pskRaw = "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9"; # (password will be written to /nix/store!)
+      pskRaw =
+        "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9"; # (password will be written to /nix/store!)
     };
   };
   networking.nat.enable = false;
@@ -42,8 +43,7 @@
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
   environment.etc.hosts.mode = "0644";
   networking.networkmanager.enable = false;
-  networking.extraHosts =
-  ''
+  networking.extraHosts = ''
     172.17.0.1 host.docker.internal
   '';
 
@@ -162,11 +162,11 @@
   programs.adb.enable = true;
   # steam
   programs.steam.enable = true;
-  programs.bash.promptInit =  ''
+  programs.bash.promptInit = ''
 
-      PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
+    PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
 
-'';
+  '';
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
@@ -204,12 +204,8 @@
         FastConnectable = "true";
         Experimental = "true";
       };
-      Policy = {
-        AutoEnable = "true";
-      };
-      LE = {
-        EnableAdvMonInterleaveScan = "true";
-      };
+      Policy = { AutoEnable = "true"; };
+      LE = { EnableAdvMonInterleaveScan = "true"; };
     };
   };
 
@@ -226,9 +222,11 @@
     exportConfiguration = true;
     displayManager.startx.enable = true;
     windowManager.cwm.enable = true;
-    windowManager.i3.enable = true;
+    windowManager.i3.enable = false;
     videoDrivers = [ "nvidia" ];
   };
+  # Enable the GNOME Desktop Environment.
+  services.xserver.desktopManager.gnome.enable = true;
   # services.xserver.xkbOptions = "eurosign:e";
 
   virtualisation.docker.enable = true;
@@ -239,13 +237,29 @@
 
   users.users.rjpc = {
     isNormalUser = true;
-    extraGroups = [ "cdrom" "wheel" "audio" "docker" "sound" "lxd" "adbusers" "scanner" "lp" ];
+    extraGroups = [
+      "cdrom"
+      "wheel"
+      "audio"
+      "docker"
+      "sound"
+      "lxd"
+      "adbusers"
+      "scanner"
+      "lp"
+    ];
     shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
   };
 
   # this should be used for work stuff moving forward
-  users.users.truman= {
+  users.users.truman = {
     isNormalUser = true;
+    extraGroups = [
+      "wheel"
+      "audio"
+      "docker"
+      "sound"
+    ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
   };
 
