@@ -147,12 +147,6 @@
     jq
     mpv
     feh
-    # TODO
-    # since this is a flake now or should be
-    # more so, gnome stuff should be moved into
-    # own file and fed to flake via nixosModules
-    gnomeExtensions.appindicator
-    gnome.gnome-tweaks
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -173,11 +167,7 @@
     PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
 
   '';
-  # gnome related ... ?
-  programs.dconf.enable = true;
-  # gnome-settings-daemon udev rules ... ?
-  # look into both
-  services.udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
+
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.settings.X11Forwarding = false;
@@ -267,18 +257,6 @@
     extraGroups = [ "wheel" "audio" "docker" "sound" ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
   };
-
-  environment.gnome.excludePackages = (with pkgs; [
-    gnome-photos
-    gnome-tour
-    epiphany # web browser
-  ]) ++ (with pkgs.gnome; [
-    cheese # webcam tool
-    gnome-terminal
-    gedit # text editor
-    evince # document viewer
-    gnome-characters
-  ]);
 
   system.stateVersion = "22.11";
 }

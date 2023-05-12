@@ -1,8 +1,6 @@
 { config, pkgs, ... }:
 
 {
-  # Home Manager needs a bit of information about you and the
-  # paths it should manage.
   home.username = "truman";
   home.homeDirectory = "/home/truman";
   home.packages = [ pkgs.fortune ];
@@ -17,10 +15,5 @@
   # changes in each release.
   home.stateVersion = "22.05";
 
-  # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
-  # this allows for a gui login? why
-  xdg.enable = true;
-  xsession.enable = true;
-  fonts.fontconfig.enable = true;
 }
