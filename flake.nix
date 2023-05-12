@@ -18,10 +18,13 @@
           services.xserver.enable = true;
           services.xserver.desktopManager.gnome.enable = false;
           services.xserver.displayManager.startx.enable = true;
+          services.gnome.core-utilities.enable = true;
+          services.gnome.core-shell.enable = true;
+          services.gnome.core-developer-tools.enable = true;
           # FIXME?
           # I think this oddness with pkgs and with pkgs.gnome
           # is due to how to gnome packages "just are" in nixpkgs
-          environment.gnome.excludePackages = (with pkgs; [ gnome-photos ])
+          environment.gnome.excludePackages = (with pkgs; [ gnome-photos gnome-tour ])
             ++ (with pkgs.gnome; [
               # cheese # webcam tool
               # gedit # text editor
@@ -35,9 +38,9 @@
               gnome-contacts
               gnome-music
               gnome-initial-setup
-              gnome-tour
             ]);
           programs.dconf.enable = true;
+          programs.gnome-terminal.enable = true;
           # I guess never assume so even if package is removed
           # from exludePackages it still needs to be added
           environment.systemPackages = with pkgs; [
@@ -47,8 +50,6 @@
             gnome.gnome-session
             gnome.cheese # webcam tool
             gnome.gedit
-            gnome.gnome-characters
-            gnome.gnome-terminal
           ];
         };
       };

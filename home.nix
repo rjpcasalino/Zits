@@ -3,7 +3,10 @@
 {
   home.username = "truman";
   home.homeDirectory = "/home/truman";
-  home.packages = [ pkgs.fortune ];
+  home.packages = [
+    pkgs.fortune
+    pkgs.cowsay
+  ];
 
   # This value determines the Home Manager release that your
   # configuration is compatible with. This helps avoid breakage
