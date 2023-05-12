@@ -214,6 +214,8 @@
   hardware.enableAllFirmware = true;
   hardware.enableRedistributableFirmware = true;
 
+  hardware.opengl.enable = true;
+  hardware.opengl.driSupport = true;
   # Enable the X11 windowing system.
   services.xserver = {
     enable = true;
@@ -225,9 +227,6 @@
     windowManager.i3.enable = false;
     videoDrivers = [ "nvidia" ];
   };
-  # Enable the GNOME Desktop Environment.
-  services.xserver.desktopManager.gnome.enable = true;
-  # services.xserver.xkbOptions = "eurosign:e";
 
   virtualisation.docker.enable = true;
   virtualisation.podman.enable = false;
