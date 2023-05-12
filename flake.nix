@@ -16,26 +16,40 @@
       gnome = { pkgs, ... }: {
         config = {
           services.xserver.enable = true;
-          services.xserver.desktopManager.gnome.enable = true;
+          services.xserver.desktopManager.gnome.enable = false;
           services.xserver.displayManager.startx.enable = true;
-          environment.gnome.excludePackages =
-            (with pkgs; [ gnome-photos gnome-tour ]) ++ (with pkgs.gnome; [
-              cheese # webcam tool
-              gnome-music
-              gedit # text editor
+          # FIXME?
+          # I think this oddness with pkgs and with pkgs.gnome
+          # is due to how to gnome packages "just are" in nixpkgs
+          environment.gnome.excludePackages = (with pkgs; [ gnome-photos ])
+            ++ (with pkgs.gnome; [
+              # cheese # webcam tool
+              # gedit # text editor
               epiphany # web browser
               geary # email reader
-              gnome-characters
               tali # poker game
               iagno # go game
               hitori # sudoku game
               atomix # puzzle game
               yelp # Help view
               gnome-contacts
+              gnome-music
               gnome-initial-setup
+              gnome-tour
             ]);
           programs.dconf.enable = true;
-          environment.systemPackages = with pkgs; [ gnome.gnome-tweaks ];
+          # I guess never assume so even if package is removed
+          # from exludePackages it still needs to be added
+          environment.systemPackages = with pkgs; [
+            gnome.gnome-control-center
+            gnome-icon-theme
+            gnome.gnome-tweaks
+            gnome.gnome-session
+            gnome.cheese # webcam tool
+            gnome.gedit
+            gnome.gnome-characters
+            gnome.gnome-terminal
+          ];
         };
       };
     };
