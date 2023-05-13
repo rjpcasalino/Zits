@@ -38,7 +38,7 @@
   };
   networking.nat.enable = false;
   # networking.nat.internalInterfaces = [ ];
-  # networking.nat.externalInterface = "enp9s0";
+  # networking.nat.externalInterface = "enp5s0";
 
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
   environment.etc.hosts.mode = "0644";
@@ -51,7 +51,7 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.enp9s0.useDHCP = false;
+  networking.interfaces.enp5s0.useDHCP = false;
   networking.interfaces.wlp4s0.useDHCP = true;
   networking.nameservers = [ "192.168.0.19" ];
   networking.enableIPv6 = true;
