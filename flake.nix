@@ -21,13 +21,9 @@
           services.gnome.core-utilities.enable = true;
           services.gnome.core-shell.enable = true;
           services.gnome.core-developer-tools.enable = true;
-          # FIXME?
-          # I think this oddness with pkgs and with pkgs.gnome
-          # is due to how to gnome packages "just are" in nixpkgs
           environment.gnome.excludePackages = (with pkgs; [ gnome-photos gnome-tour ])
             ++ (with pkgs.gnome; [
-              # cheese # webcam tool
-              # gedit # text editor
+              gedit # text editor
               epiphany # web browser
               geary # email reader
               tali # poker game
@@ -41,15 +37,13 @@
             ]);
           programs.dconf.enable = true;
           programs.gnome-terminal.enable = true;
-          # I guess never assume so even if package is removed
-          # from exludePackages it still needs to be added
+          # FIXME
+          # see which of these is included in either
+          # core-utilities or core-shell or core-dev
           environment.systemPackages = with pkgs; [
-            gnome.gnome-control-center
-            gnome-icon-theme
+            gnome.gedit # basic texteditor
             gnome.gnome-tweaks
             gnome.gnome-session
-            gnome.cheese # webcam tool
-            gnome.gedit
           ];
         };
       };
