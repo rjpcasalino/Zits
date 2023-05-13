@@ -147,6 +147,7 @@
     jq
     mpv
     feh
+    redshift
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -178,7 +179,8 @@
   services.printing.enable = true;
   # If true and not using printer often
   # the jounrnal will get polluted with messages...
-  services.avahi.enable = false;
+  # also needed for geoclue and redshift?
+  services.avahi.enable = true;
   # Enable SANE for scanning
   hardware.sane.enable = true;
   services.avahi.nssmdns = true;
