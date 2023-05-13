@@ -256,7 +256,7 @@
   users.users.truman = {
     isNormalUser = true;
     extraGroups = [ "wheel" "audio" "docker" "sound" ];
-    shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
+    # shell is set in home.nix
   };
 
   system.stateVersion = "22.11";
