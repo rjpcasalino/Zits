@@ -105,7 +105,6 @@
 
   nix = {
     package = pkgs.nixUnstable;
-    #autoOptimiseStore = true;
     settings.auto-optimise-store = true;
     extraOptions = ''
       experimental-features = nix-command flakes
@@ -169,6 +168,7 @@
 
   '';
 
+  services.kmscon.enable = false;
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.settings.X11Forwarding = false;
@@ -256,7 +256,7 @@
   users.users.truman = {
     isNormalUser = true;
     extraGroups = [ "wheel" "audio" "docker" "sound" ];
-    # shell is set in home.nix
+    shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
   };
 
   system.stateVersion = "22.11";
