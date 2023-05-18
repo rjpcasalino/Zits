@@ -15,14 +15,12 @@
     nixosModules = {
       gnome = { pkgs, ... }: {
         config = {
-          services.xserver.enable = true;
           services.xserver.desktopManager.gnome.enable = false;
-          services.xserver.displayManager.startx.enable = true;
           services.gnome.core-utilities.enable = true;
           services.gnome.core-shell.enable = true;
           services.gnome.core-developer-tools.enable = true;
-          environment.gnome.excludePackages = (with pkgs; [ gnome-photos gnome-tour ])
-            ++ (with pkgs.gnome; [
+          environment.gnome.excludePackages =
+            (with pkgs; [ gnome-photos gnome-tour ]) ++ (with pkgs.gnome; [
               gedit # text editor
               epiphany # web browser
               geary # email reader
@@ -47,6 +45,27 @@
           ];
         };
       };
+      # FIXME
+      # just blue wallpaper and cursor :(
+      pantheon = { pkgs, ... }: {
+        config = {
+          services.xserver.displayManager.lightdm.greeters.pantheon.enable =
+            false;
+          services.xserver.desktopManager.pantheon.enable = false;
+          services.pantheon.apps.enable = true;
+          environment.pantheon.excludePackages = (with pkgs; [ ])
+            ++ (with pkgs.pantheon; [ ]);
+          environment.systemPackages = with pkgs.pantheon;
+            [
+              elementary-session-settings
+              elementary-settings-daemon
+              elementary-dock
+              wingpanel
+              gala
+            ] ++ (with pkgs; [ plank ]);
+          programs.dconf.enable = true;
+        };
+      };
     };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -54,6 +73,7 @@
         ./configuration.nix
         home-manager.nixosModules.home-manager
         gnome
+        pantheon
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;

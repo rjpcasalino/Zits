@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports = [
@@ -147,6 +147,7 @@
     mpv
     feh
     redshift
+    docker-compose
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -169,6 +170,14 @@
   '';
 
   services.kmscon.enable = false;
+  # FIXME
+  # this wasn't working so do it
+  # hard way via xinitrc
+  services.redshift.enable = false;
+  # for redshift
+  location.latitude = 47.36;
+  location.longitude = -122.19;
+  location.provider = "manual";
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
   services.openssh.settings.X11Forwarding = false;
@@ -230,7 +239,16 @@
     videoDrivers = [ "nvidia" ];
   };
 
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+    logDriver = "journald";
+    liveRestore = true;
+    package = pkgs.docker;
+  };
+  virtualisation.docker.autoPrune = {
+    enable = true;
+    flags = [ "--all, --volumes" ];
+  };
   virtualisation.podman.enable = false;
   virtualisation.libvirtd.enable = false;
   virtualisation.virtualbox.host.enable = false;
