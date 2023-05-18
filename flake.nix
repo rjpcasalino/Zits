@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs = { url = "github:nixos/nixpkgs/nixos-unstable"; };
     home-manager = {
-      #url = github:nix-community/home-manager/release-22.11;
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -39,31 +38,10 @@
           # see which of these is included in either
           # core-utilities or core-shell or core-dev
           environment.systemPackages = with pkgs; [
-            gnome.gedit # basic texteditor
+            gnome.gnome-settings-daemon
             gnome.gnome-tweaks
             gnome.gnome-session
           ];
-        };
-      };
-      # FIXME
-      # just blue wallpaper and cursor :(
-      pantheon = { pkgs, ... }: {
-        config = {
-          services.xserver.displayManager.lightdm.greeters.pantheon.enable =
-            false;
-          services.xserver.desktopManager.pantheon.enable = false;
-          services.pantheon.apps.enable = true;
-          environment.pantheon.excludePackages = (with pkgs; [ ])
-            ++ (with pkgs.pantheon; [ ]);
-          environment.systemPackages = with pkgs.pantheon;
-            [
-              elementary-session-settings
-              elementary-settings-daemon
-              elementary-dock
-              wingpanel
-              gala
-            ] ++ (with pkgs; [ plank ]);
-          programs.dconf.enable = true;
         };
       };
     };
@@ -73,7 +51,6 @@
         ./configuration.nix
         home-manager.nixosModules.home-manager
         gnome
-        pantheon
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
