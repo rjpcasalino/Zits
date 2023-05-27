@@ -12,8 +12,6 @@
   boot.loader.grub.useOSProber = true;
 
   boot.kernelPackages = pkgs.linuxPackages_6_2;
-  # make the kernel use amdgpu early
-  boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelModules = [ "kvm-amd" "iwlwifi" ];
   # this is for wifi and bluetooth antenna
   boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
@@ -119,7 +117,6 @@
     vscode
     curl
     cwm
-    doas
     direnv
     ed
     vim
@@ -238,7 +235,8 @@
     displayManager.startx.enable = true;
     windowManager.cwm.enable = true;
     windowManager.i3.enable = false;
-    videoDrivers = [ "amdgpu" ];
+    # this will pick amdgpu by default
+    videoDrivers = [ "modesetting" ];
   };
 
   virtualisation.docker = {
