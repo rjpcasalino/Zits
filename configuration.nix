@@ -138,7 +138,6 @@
     screen
     spotify
     polybar
-    xscreensaver
     libbluray
     libaacs
     synergy
@@ -147,6 +146,7 @@
     feh
     redshift
     docker-compose
+    xscreensaver
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -167,7 +167,6 @@
     PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
 
   '';
-
   services.kmscon.enable = false;
   # FIXME
   # this wasn't working so do it
