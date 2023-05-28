@@ -147,6 +147,7 @@
     redshift
     docker-compose
     xscreensaver
+    ffmpeg
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
