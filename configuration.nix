@@ -114,40 +114,41 @@
   environment.systemPackages = with pkgs; [
     awscli2
     bluez-tools
-    vscode
     curl
     cwm
     direnv
+    du-dust
+    docker-compose
     ed
-    vim
-    vlc
-    wget
-    minikube
-    neofetch
-    nixfmt
     firefox
     fd
-    google-chrome
-    microsoft-edge
+    feh
+    ffmpeg
     git
     go
-    qemu
+    google-chrome
+    jq
+    libbluray
+    libaacs
+    nixfmt
+    neofetch
+    mpv
+    microsoft-edge
+    minikube
     oneko
+    polybar
+    qemu
     ripgrep
+    redshift
     scrot
     screen
     spotify
-    polybar
-    libbluray
-    libaacs
     synergy
-    jq
-    mpv
-    feh
-    redshift
-    docker-compose
+    vim
+    vlc
+    vscode
+    wget
     xscreensaver
-    ffmpeg
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
