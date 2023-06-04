@@ -12,7 +12,7 @@
   boot.loader.grub.useOSProber = true;
 
   boot.kernelPackages = pkgs.linuxPackages_6_2;
-  boot.kernelModules = [ "kvm-amd" "iwlwifi" ];
+  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" ];
   # this is for wifi and bluetooth antenna
   boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
   boot.extraModprobeConfig = ''
@@ -149,6 +149,8 @@
     vscode
     wget
     xscreensaver
+    xorg.xmodmap
+    xorg.xev
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
