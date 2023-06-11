@@ -1,8 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   imports = [
-    # Include the results of the hardware scan.
     ./hardware-configuration.nix
   ];
 
@@ -27,9 +26,7 @@
   networking.wireless.userControlled.enable = true;
   networking.wireless.iwd.enable = false;
   networking.wireless.scanOnLowSignal = false;
-  # FIXME
-  # still feels dirty
-  # best guide: https://mcwhirter.com.au/craige/blog/2019/Setting_Up_Wireless_Networking_with_NixOS/
+  # use wpa_passphrase or whatnot
   networking.wireless.networks = {
     Sulaco = {
       pskRaw =
@@ -51,8 +48,8 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.enp5s0.useDHCP = false;
-  networking.interfaces.wlp4s0.useDHCP = true;
+  networking.interfaces.enp6s0.useDHCP = false;
+  networking.interfaces.wlp5s0.useDHCP = true;
   networking.nameservers = [ "192.168.0.19" ];
   networking.enableIPv6 = true;
 
@@ -123,15 +120,17 @@
     firefox
     fd
     feh
-    ffmpeg
+    ffmpeg-full
     git
     go
+    gopls
     google-chrome
     jq
     libbluray
     libaacs
-    nixfmt
+    nixpkgs-fmt
     neofetch
+    nil
     mpv
     microsoft-edge
     minikube
@@ -139,6 +138,7 @@
     polybar
     qemu
     ripgrep
+    rnix-lsp
     redshift
     scrot
     screen
