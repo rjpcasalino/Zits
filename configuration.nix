@@ -10,7 +10,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_6_2;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" ];
   # this is for wifi and bluetooth antenna
   boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
@@ -172,6 +172,8 @@
 
   '';
   services.kmscon.enable = false;
+  # General Purpose Mouse daemon, which enables mouse support in virtual consoles
+  services.gpm.enable = true;
   # FIXME
   # this wasn't working so do it
   # hard way via xinitrc
