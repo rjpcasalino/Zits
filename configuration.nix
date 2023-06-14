@@ -206,8 +206,19 @@
   services.avahi.openFirewall = true;
   services.printing.drivers = [ pkgs.hplip ];
 
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  hardware.pulseaudio.enable = false;
+  # TODO: move this
+  # also, I removed sound.enable
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    audio.enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    jack.enable = true;
+    wireplumber.enable = true;
+    pulse.enable = true;
+  };
 
   hardware.bluetooth = {
     enable = true;
