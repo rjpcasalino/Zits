@@ -83,12 +83,15 @@
     liberation_ttf
   ];
 
-  # Set your time zone.
+  # TIME ZONE
   time.timeZone = "America/Los_Angeles";
 
   # nixpkgs
   # TODO: clean up?
+  # FIXME: seems config.nix conflicts with this
   nixpkgs.config.allowUnfree = true;
+  # for BLE stuff? broken? see above
+  # nixpkgs.config.segger-jlink.acceptLicense = true;
   nixpkgs.overlays = [
     (self: super: {
       vlc = super.vlc.override {
@@ -136,6 +139,7 @@
     minikube
     oneko
     polybar
+    pamixer
     qemu
     ripgrep
     rnix-lsp
@@ -143,14 +147,17 @@
     scrot
     screen
     spotify
+    slack
     synergy
     vim
     vlc
     vscode
     wget
+    xdg-utils
     xscreensaver
     xorg.xmodmap
     xorg.xev
+    zoom-us
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -162,15 +169,14 @@
   #   pinentryFlavor = "gnome3";
   # };
 
-  # Android stuff
+  # Android
   programs.adb.enable = true;
-  # steam
+  # Steam
   programs.steam.enable = true;
   programs.bash.promptInit = ''
-
     PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
-
   '';
+  # FIXME: remove?
   services.kmscon.enable = false;
   # General Purpose Mouse daemon, which enables mouse support in virtual consoles
   services.gpm.enable = true;
@@ -187,7 +193,6 @@
   services.openssh.settings.X11Forwarding = false;
   # keybase service
   services.keybase.enable = false;
-
   # Enable CUPS to print documents.
   services.printing.enable = true;
   # If true and not using printer often
@@ -210,6 +215,7 @@
   # TODO: move this
   # also, I removed sound.enable
   security.rtkit.enable = true;
+  security.doas.enable = true;
   services.pipewire = {
     enable = true;
     audio.enable = true;
@@ -220,6 +226,8 @@
     pulse.enable = true;
   };
 
+  # TODO
+  # look into LE settings
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
@@ -254,7 +262,8 @@
     # this will pick amdgpu by default
     videoDrivers = [ "modesetting" ];
   };
-
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   virtualisation.docker = {
     enable = true;
     logDriver = "journald";
