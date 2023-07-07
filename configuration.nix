@@ -111,6 +111,18 @@
   #  })
   #];
 
+  ## MPV OVERLAY ##
+  nixpkgs.overlays = [
+    (self: super: {
+      mpv-unwrapped = super.mpv-unwrapped.override {
+        libbluray = super.libbluray.override {
+          withAACS = true;
+          withBDplus = true;
+        };
+      };
+    })
+  ];
+
   nix = {
     package = pkgs.nixUnstable;
     settings.auto-optimise-store = true;
@@ -142,7 +154,7 @@
     nixpkgs-fmt
     neofetch
     nil
-    mpv
+    mpv-unwrapped
     microsoft-edge
     minikube
     oneko
