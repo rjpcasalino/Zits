@@ -29,8 +29,10 @@
   # use wpa_passphrase or whatnot
   networking.wireless.networks = {
     Sulaco = {
-      pskRaw =
-        "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9"; # (password will be written to /nix/store!)
+      pskRaw = "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9";
+      extraConfig = ''
+        bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
+      '';
     };
   };
   networking.nat.enable = false;
@@ -77,6 +79,7 @@
   };
 
   fonts.fonts = with pkgs; [
+    nerdfonts
     noto-fonts
     noto-fonts-cjk
     noto-fonts-emoji
@@ -92,16 +95,21 @@
   nixpkgs.config.allowUnfree = true;
   # for BLE stuff? broken? see above
   # nixpkgs.config.segger-jlink.acceptLicense = true;
-  nixpkgs.overlays = [
-    (self: super: {
-      vlc = super.vlc.override {
-        libbluray = super.libbluray.override {
-          withAACS = true;
-          withBDplus = true;
-        };
-      };
-    })
-  ];
+
+  ## VLC OVERLAY ##
+  ## uncomment if one needs vlc ##
+  ## mpv works better in most cases ##
+  ## but, like, that's just my opinion
+  # nixpkgs.overlays = [
+  #  (self: super: {
+  #    vlc = super.vlc.override {
+  #     libbluray = super.libbluray.override {
+  #       withAACS = true;
+  #       withBDplus = true;
+  #      };
+  #    };
+  #  })
+  #];
 
   nix = {
     package = pkgs.nixUnstable;
@@ -150,7 +158,6 @@
     slack
     synergy
     vim
-    vlc
     vscode
     wget
     xdg-utils
@@ -261,8 +268,16 @@
     windowManager.i3.enable = false;
     # this will pick amdgpu by default
     videoDrivers = [ "modesetting" ];
+    libinput = {
+      enable = true;
+      mouse = {
+        middleEmulation = true;
+        tapping = false;
+        tappingButtonMap = "lmr";
+      };
+    };
   };
-  xdg.portal.enable = true;
+  xdg.portal.enable = false;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   virtualisation.docker = {
     enable = true;
@@ -283,6 +298,7 @@
     isNormalUser = true;
     extraGroups = [
       "cdrom"
+      "dialout"
       "wheel"
       "audio"
       "docker"
