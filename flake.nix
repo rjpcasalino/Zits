@@ -7,10 +7,14 @@
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # Accepting unexpected attributes in argument set i.e., @
-  outputs = inputs@{ self, nixpkgs, home-manager, ... }: {
+  outputs = inputs@{ self, nixpkgs, home-manager, sops-nix, ... }: {
     nixosModules = {
       gnome = { pkgs, ... }: {
         config = {
@@ -59,6 +63,7 @@
           # Optionally, use home-manager.extraSpecialArgs to pass
           # arguments to home.nix
         }
+        sops-nix.nixosModules.sops
       ];
     };
   };
