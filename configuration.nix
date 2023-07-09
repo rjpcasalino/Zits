@@ -20,6 +20,12 @@
   '';
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
 
+  # SOPS
+  sops.defaultSopsFile = "/home/rjpc/secrets/zits.yaml";
+  sops.validateSopsFiles = false;
+  sops.secrets."wireless.env" = {};
+
+  networking.wireless.environmentFile = config.sops.secrets."wireless.env".path;
   networking.hostName = "zits";
   networking.wireless.enable =
     true; # Enables wireless support via wpa_supplicant.
@@ -28,8 +34,8 @@
   networking.wireless.scanOnLowSignal = false;
   # use wpa_passphrase or whatnot
   networking.wireless.networks = {
-    Sulaco = {
-      pskRaw = "68a22d0495e941f027cdafc16a98945ad02f5a7ad13da2f8dfb8ab23669fe7d9";
+  "@ssid@" = {
+      pskRaw = "@pskRaw@";
       extraConfig = ''
         bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
       '';
@@ -148,6 +154,7 @@
     go
     gopls
     google-chrome
+    gnupg
     jq
     libbluray
     libaacs
