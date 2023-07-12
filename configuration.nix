@@ -23,18 +23,20 @@
   # SOPS
   sops.defaultSopsFile = "/home/rjpc/secrets/zits.yaml";
   sops.validateSopsFiles = false;
-  sops.secrets."wireless.env" = {};
+  sops.secrets."wireless.env" = { };
 
   networking.wireless.environmentFile = config.sops.secrets."wireless.env".path;
   networking.hostName = "zits";
   networking.wireless.enable =
     true; # Enables wireless support via wpa_supplicant.
+  # networking.wireless.enable and networking.wireless.iwd.enable are mutually exclusive
   networking.wireless.userControlled.enable = true;
-  networking.wireless.iwd.enable = false;
   networking.wireless.scanOnLowSignal = false;
-  # use wpa_passphrase or whatnot
+  # use wpa_passphrase
+  # we don't need to blacklist these bssid anymore
+  # but good example of how to do so.
   networking.wireless.networks = {
-  "@ssid@" = {
+    "@ssid@" = {
       pskRaw = "@pskRaw@";
       extraConfig = ''
         bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
@@ -46,7 +48,9 @@
   # networking.nat.externalInterface = "enp5s0";
 
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
+  # note: the hosts mode is to allow vpn split to work for mct
   environment.etc.hosts.mode = "0644";
+  # not sure this extraHosts stuff is working
   networking.networkmanager.enable = false;
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
@@ -56,7 +60,7 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.enp6s0.useDHCP = false;
+  networking.interfaces.enp6s0.useDHCP = true;
   networking.interfaces.wlp5s0.useDHCP = true;
   networking.nameservers = [ "192.168.0.19" ];
   networking.enableIPv6 = true;
@@ -102,22 +106,9 @@
   # for BLE stuff? broken? see above
   # nixpkgs.config.segger-jlink.acceptLicense = true;
 
-  ## VLC OVERLAY ##
-  ## uncomment if one needs vlc ##
-  ## mpv works better in most cases ##
-  ## but, like, that's just my opinion
-  # nixpkgs.overlays = [
-  #  (self: super: {
-  #    vlc = super.vlc.override {
-  #     libbluray = super.libbluray.override {
-  #       withAACS = true;
-  #       withBDplus = true;
-  #      };
-  #    };
-  #  })
-  #];
-
   ## MPV OVERLAY ##
+  ## if you want vlc back just
+  ## use same overlay
   nixpkgs.overlays = [
     (self: super: {
       mpv-unwrapped = super.mpv-unwrapped.override {
@@ -138,6 +129,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    arandr
     awscli2
     bluez-tools
     curl
@@ -171,11 +163,13 @@
     ripgrep
     rnix-lsp
     redshift
+    rpi-imager
     scrot
     screen
     spotify
     slack
     synergy
+    sops
     vim
     vscode
     wget
@@ -185,15 +179,6 @@
     xorg.xev
     zoom-us
   ];
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  #   pinentryFlavor = "gnome3";
-  # };
 
   # Android
   programs.adb.enable = true;
@@ -283,6 +268,9 @@
     autorun = false;
     exportConfiguration = true;
     displayManager.startx.enable = true;
+    displayManager.setupCommands = ''
+      ${pkgs.xorg.xrandr}/bin/xrandr --output "DP-1" --primary --rotate normal --output "HDMI-1" --rotate normal --left-of "DP-1"
+    '';
     windowManager.cwm.enable = true;
     windowManager.i3.enable = false;
     # this will pick amdgpu by default
