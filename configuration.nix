@@ -150,18 +150,17 @@
     jq
     libbluray
     libaacs
-    nixpkgs-fmt
-    neofetch
-    nil
     mpv-unwrapped
     microsoft-edge
     minikube
+    nixpkgs-fmt
+    neofetch
     oneko
     polybar
     pamixer
     qemu
     ripgrep
-    rnix-lsp
+    rnix-lsp # nix lang server
     redshift
     rpi-imager
     scrot
