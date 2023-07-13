@@ -68,15 +68,14 @@
   networking.interfaces.wlp5s0.useDHCP = true;
   networking.nameservers = [ "192.168.0.19" ];
   networking.enableIPv6 = true;
+  services.resolved.enable = true;
 
-  # Open ports in firewall
-  # only synergy thus far
+  # Firewall
+  networking.firewall.enable = true;
+  # synergy is 51413. Not sure about 24800
   networking.firewall.allowedTCPPorts = [ 24800 51413 ];
   # networking.firewall.allowedUDPPorts = [ 53 ];
-  # Or disable the firewall altogether.
-  networking.firewall.enable = true;
-  services.resolved.enable = true;
-  # # 
+  # #
 
   # Internationalisation properties #
   i18n.defaultLocale = "en_US.UTF-8";
@@ -116,14 +115,18 @@
   };
   # #
 
+  # Misc programs # 
   # Android
   programs.adb.enable = true;
   # Steam
   programs.steam.enable = true;
+  # #
 
+  # bash # 
   programs.bash.promptInit = ''
     PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
   '';
+  # #
 
   # Linux console #
   services.kmscon.enable = false;
@@ -227,8 +230,10 @@
   };
   # #
 
+  # xdg; TODO: learn more
   xdg.portal.enable = false;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  # #
 
   # Docker et al
   virtualisation.docker = {
@@ -245,6 +250,7 @@
   virtualisation.libvirtd.enable = false;
   virtualisation.virtualbox.host.enable = false;
   virtualisation.lxd.enable = false;
+  # #
 
   ## overlays ##
   nixpkgs.overlays = [
