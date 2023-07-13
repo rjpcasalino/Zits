@@ -66,9 +66,10 @@
   networking.useDHCP = false;
   networking.interfaces.enp6s0.useDHCP = true;
   networking.interfaces.wlp5s0.useDHCP = true;
-  networking.nameservers = [ "192.168.0.19" ];
+  # networking.nameservers = [ "192.168.0.19" ];
   networking.enableIPv6 = true;
   services.resolved.enable = true;
+  services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
 
   # Firewall
   networking.firewall.enable = true;
