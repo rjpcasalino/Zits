@@ -213,9 +213,6 @@
     autorun = false;
     exportConfiguration = true;
     displayManager.startx.enable = true;
-    displayManager.setupCommands = ''
-      ${pkgs.xorg.xrandr}/bin/xrandr --output "DP-1" --primary --rotate normal --output "HDMI-1" --rotate normal --left-of "DP-1"
-    '';
     windowManager.cwm.enable = true;
     windowManager.i3.enable = false;
     # this will pick amdgpu by default
@@ -308,6 +305,7 @@
     slack
     synergy
     sops
+    unzip
     vim
     vscode
     wget
