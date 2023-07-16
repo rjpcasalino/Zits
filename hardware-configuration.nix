@@ -32,6 +32,12 @@
       fsType = "ext4";
     };
 
+  fileSystems."/home/rjpc/EXSSD" =
+    {
+      device = "/dev/disk/by-uuid/79acb437-d581-47a1-ab06-8230b871bafd";
+      fsType = "ext2";
+    };
+
   swapDevices =
     [{ device = "/dev/disk/by-uuid/dd43790a-5215-4f4b-bf69-4baf15841cf8"; }];
 
