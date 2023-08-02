@@ -4,7 +4,7 @@
   imports = [
     ./hardware-configuration.nix
   ];
-  
+
   ## boot ##
   # systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -66,7 +66,7 @@
   networking.useDHCP = false;
   networking.interfaces.enp6s0.useDHCP = true;
   networking.interfaces.wlp5s0.useDHCP = true;
-  networking.nameservers = [ "192.168.0.19" ];
+  networking.nameservers = [ "192.168.0.247" ];
   networking.enableIPv6 = true;
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
@@ -151,7 +151,7 @@
 
   # keybase service
   services.keybase.enable = false;
-  
+
   # CUPS and SANE #
   services.printing.enable = true;
   # If true and not using printer often
@@ -183,7 +183,7 @@
     pulse.enable = true;
   };
   # #
-  
+
   # related to bluetooth HSP/HFP mode
   # see: https://nixos.wiki/wiki/Bluetooth#No_audio_when_using_headset_in_HSP.2FHFP_mode
   hardware.enableAllFirmware = true;
@@ -220,7 +220,7 @@
     libinput = {
       enable = true;
       mouse = {
-        middleEmulation = true;
+        middleEmulation = false;
         tapping = false;
         tappingButtonMap = "lmr";
       };
@@ -270,6 +270,7 @@
     bluez-tools
     curl
     cwm
+    cmus
     direnv
     du-dust
     docker-compose
@@ -282,13 +283,19 @@
     go
     gopls
     google-chrome
+    # used in SOPs
+    # replace with age?
     gnupg
+    # used @ work
+    grpcui
+    #
     jq
+    # kitty is a modern hackable term
+    kitty
     libbluray
     libaacs
     mpv-unwrapped # see overlays
     microsoft-edge
-    minikube
     nixpkgs-fmt
     neofetch
     oneko
@@ -309,10 +316,12 @@
     vim
     vscode
     wget
+    wireshark
     xdg-utils
     xscreensaver
     xorg.xmodmap
     xorg.xev
+    xorg.libXft
     zoom-us
   ];
   users.users.rjpc = {
