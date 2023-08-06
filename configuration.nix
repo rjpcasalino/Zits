@@ -64,9 +64,9 @@
   '';
   # The global useDHCP flag is deprecated
   networking.useDHCP = false;
-  networking.interfaces.enp6s0.useDHCP = true;
-  networking.interfaces.wlp5s0.useDHCP = true;
-  networking.nameservers = [ "192.168.0.247" ];
+  networking.interfaces.enp7s0.useDHCP = true;
+  networking.interfaces.wlp6s0.useDHCP = true;
+  networking.nameservers = [ "192.168.0.149" ];
   networking.enableIPv6 = true;
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
@@ -89,7 +89,7 @@
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
   };
-  fonts.fonts = with pkgs; [
+  fonts.packages = with pkgs; [
     nerdfonts
     noto-fonts
     noto-fonts-cjk
