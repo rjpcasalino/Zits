@@ -37,7 +37,7 @@
               gnome-initial-setup
             ]);
           programs.dconf.enable = true;
-          programs.gnome-terminal.enable = true;
+          programs.gnome-terminal.enable = false;
           # FIXME
           # see which of these is included in either
           # core-utilities or core-shell or core-dev
