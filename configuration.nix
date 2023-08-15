@@ -11,7 +11,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" ];
+  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" ];
   # this is for wifi and bluetooth antenna
   boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
   boot.extraModprobeConfig = ''
@@ -67,7 +67,7 @@
   networking.interfaces.enp7s0.useDHCP = true;
   networking.interfaces.wlp6s0.useDHCP = true;
   networking.nameservers = [ "192.168.0.149" ];
-  networking.enableIPv6 = true;
+  networking.enableIPv6 = false;
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
 
@@ -294,11 +294,13 @@
     kitty
     libbluray
     libaacs
+    makemkv
     mpv-unwrapped # see overlays
     microsoft-edge
     nixpkgs-fmt
     neofetch
     oneko
+    opera
     polybar
     pamixer
     qemu
