@@ -38,6 +38,12 @@
       fsType = "ext2";
     };
 
+  fileSystems."/gameboi" =
+    {
+      device = "/dev/disk/by-uuid/019ec47d-17ed-4601-bacf-a3ef893fa31d";
+      fsType = "ext4";
+    };
+
   swapDevices =
     [{ device = "/dev/disk/by-uuid/dd43790a-5215-4f4b-bf69-4baf15841cf8"; }];
 
