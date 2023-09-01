@@ -12,11 +12,13 @@
   boot.loader.grub.useOSProber = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" ];
-  # this is for wifi and bluetooth antenna
+  # this is for wifi and bluetooth antenna (one that I used long ago)
   boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
   boot.extraModprobeConfig = ''
     options iwlwifi power_save=N
+    options iwlwifi 11n_disable=8 bt_coex_active=Y
     options iwldvm force_cam=Y
+    options iwlmvm power_scheme=1
   '';
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   # #
@@ -97,6 +99,7 @@
     emojione
     openmoji-color
     openmoji-black
+    material-design-icons
   ];
   # #
 
