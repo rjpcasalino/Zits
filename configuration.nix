@@ -295,8 +295,6 @@
     grpcui
     #
     jq
-    # kitty is a modern hackable term
-    kitty
     libbluray
     libaacs
     makemkv
