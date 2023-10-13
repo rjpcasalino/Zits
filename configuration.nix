@@ -233,6 +233,10 @@
   };
   # #
 
+  # anti virus #
+  services.clamav.daemon.enable = true;
+  services.clamav.updater.enable = true;
+
   # xdg; TODO: learn more
   xdg.portal.enable = false;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -276,6 +280,7 @@
     curl
     cwm
     cmus
+    clamav
     direnv
     du-dust
     docker-compose
@@ -319,7 +324,16 @@
     sops
     unzip
     vim
-    vscode
+    (vscode-with-extensions.override {
+      vscodeExtensions = with vscode-extensions; [
+        bbenoist.nix
+        dracula-theme.theme-dracula
+        golang.go
+        mechatroner.rainbow-csv
+        ms-python.python
+        ms-azuretools.vscode-docker
+      ];
+    })
     wget
     wireshark
     xdg-utils
