@@ -332,6 +332,7 @@
         mechatroner.rainbow-csv
         ms-python.python
         ms-azuretools.vscode-docker
+        ms-vscode.makefile-tools
       ];
     })
     wget
