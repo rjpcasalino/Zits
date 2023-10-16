@@ -306,6 +306,7 @@
     mpv-unwrapped # see overlays
     microsoft-edge
     nixpkgs-fmt
+    nixpkgs-review
     neofetch
     oneko
     opera
