@@ -1,27 +1,22 @@
 { pkgs, ... }:
 
 {
-  home.username = "truman";
-  home.homeDirectory = "/home/truman";
-  home.packages = [
-    pkgs.fortune
-    pkgs.cowsay
-  ];
+  home.username = "rjpc";
+  home.homeDirectory = "/home/rjpc";
+  home.packages = [ ];
 
-  # This value determines the Home Manager release that your
-  # configuration is compatible with. This helps avoid breakage
-  # when a new Home Manager release introduces backwards
-  # incompatible changes.
-  #
-  # You can update Home Manager without changing this value. See
-  # the Home Manager release notes for a list of state version
-  # changes in each release.
   home.stateVersion = "22.05";
 
   programs.home-manager.enable = true;
   programs.zsh.enable = true;
   programs.zsh.initExtra = ''
+    export GIT_PS1_SHOWDIRTYSTATE=1
+    export GIT_PS1_SHOWSTASHSTATE=1
+    export GIT_PS1_SHOWCOLORHINTS=1
+    export GIT_PS1_SHOWUPSTREAM="auto"
+    setopt PROMPT_SUBST
+    autoload -U colors && colors
     source $HOME/.git-prompt.sh
-    setopt PROMPT_SUBST ; PS1='[%n@%m %c$(__git_ps1 " (%s)")]\$ '
+    export PS1='%F{magenta}%n%f %B%F{blue}%~ $(__git_ps1 "(%s) ")%b%f%# '
   '';
 }
