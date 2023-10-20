@@ -37,17 +37,17 @@
   # Networking #
   networking.wireless.environmentFile = config.sops.secrets."wireless.env".path;
   networking.hostName = "zits";
-  networking.wireless.enable =
-    true; # Enables wireless support via wpa_supplicant.
-  # networking.wireless.enable and networking.wireless.iwd.enable are mutually exclusive
+  networking.wireless.enable = true;
   networking.wireless.userControlled.enable = true;
   networking.wireless.scanOnLowSignal = false;
   # use wpa_passphrase
   # we don't need to blacklist these bssid anymore
   # but good example of how to do so.
+  # FIXME:
+  # pksRaw no longer works for WPA3
   networking.wireless.networks = {
     "@ssid@" = {
-      pskRaw = "@pskRaw@";
+      psk = "@psk@";
       extraConfig = ''
         bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
       '';
