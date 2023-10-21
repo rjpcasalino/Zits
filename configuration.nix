@@ -23,6 +23,76 @@
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   # #
 
+  # nix and nixpkgs #
+  # FIXME: seems config.nix conflicts with this
+  nixpkgs.config.allowUnfree = true;
+  # for BLE stuff? broken?
+  # nixpkgs.config.segger-jlink.acceptLicense = true;
+  nix = {
+    package = pkgs.nixUnstable;
+    settings.auto-optimise-store = true;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+  };
+  # #
+
+  ## overlays ##
+  nixpkgs.overlays = [
+    (self: super: {
+      mpv-unwrapped = super.mpv-unwrapped.override {
+        libbluray = super.libbluray.override {
+          withAACS = true;
+          withBDplus = true;
+        };
+      };
+    })
+  ];
+  # #
+
+  # TIME ZONE
+  time.timeZone = "America/Los_Angeles";
+  # #
+
+  # Linux console #
+  console = {
+    earlySetup = true;
+    font = "${pkgs.terminus_font}/share/consolefonts/ter-v16n.psf.gz";
+    packages = with pkgs; [ terminus_font ];
+    keyMap = "us";
+    colors = [
+      "002b36"
+      "dc322f"
+      "859900"
+      "b58900"
+      "268bd2"
+      "d33682"
+      "2aa198"
+      "eee8d5"
+      "002b36"
+      "cb4b16"
+      "586e75"
+      "657b83"
+      "839496"
+      "6c71c4"
+      "93a1a1"
+      "fdf6e3"
+    ];
+  };
+  # General Purpose Mouse daemon, which enables mouse support in virtual consoles
+  services.gpm.enable = true;
+  services.kmscon.enable = false;
+  # #
+
+  # Internationalisation properties #
+  i18n.defaultLocale = "en_US.UTF-8";
+  # #
+
+  # Enable the OpenSSH daemon.
+  services.openssh.enable = true;
+  services.openssh.settings.X11Forwarding = false;
+  # #
+
   # SOPS
   sops.defaultSopsFile = "/home/rjpc/secrets/zits.yaml";
   sops.validateSopsFiles = false;
@@ -32,6 +102,23 @@
   # Security
   security.rtkit.enable = true;
   security.doas.enable = true;
+
+  # anti virus #
+  services.clamav.daemon.enable = true;
+  services.clamav.updater.enable = true;
+  # #
+
+  # Fonts #
+  fonts.enableDefaultPackages = true;
+  fonts.enableGhostscriptFonts = true;
+  fonts.packages = with pkgs; [
+    nerdfonts
+    noto-fonts
+    emojione
+    openmoji-color
+    openmoji-black
+    material-design-icons
+  ];
   # #
 
   # Networking #
@@ -79,66 +166,6 @@
   # synergy is 51413
   networking.firewall.allowedTCPPorts = [ 51413 ];
   # networking.firewall.allowedUDPPorts = [ 53 ];
-
-  # #
-
-  # Internationalisation properties #
-  i18n.defaultLocale = "en_US.UTF-8";
-  # #
-
-  # Font Stuff #
-  console = {
-    earlySetup = true;
-    font = "${pkgs.terminus_font}/share/consolefonts/ter-v16n.psf.gz";
-    packages = with pkgs; [ terminus_font ];
-    keyMap = "us";
-    colors = [
-      "002b36"
-      "dc322f"
-      "859900"
-      "b58900"
-      "268bd2"
-      "d33682"
-      "2aa198"
-      "eee8d5"
-      "002b36"
-      "cb4b16"
-      "586e75"
-      "657b83"
-      "839496"
-      "6c71c4"
-      "93a1a1"
-      "fdf6e3"
-    ];
-  };
-  fonts.enableDefaultPackages = true;
-  fonts.enableGhostscriptFonts = true;
-  fonts.packages = with pkgs; [
-    nerdfonts
-    noto-fonts
-    emojione
-    openmoji-color
-    openmoji-black
-    material-design-icons
-  ];
-  # #
-
-  # TIME ZONE
-  time.timeZone = "America/Los_Angeles";
-  # #
-
-  # nix and nixpkgs #
-  # FIXME: seems config.nix conflicts with this
-  nixpkgs.config.allowUnfree = true;
-  # for BLE stuff? broken?
-  # nixpkgs.config.segger-jlink.acceptLicense = true;
-  nix = {
-    package = pkgs.nixUnstable;
-    settings.auto-optimise-store = true;
-    extraOptions = ''
-      experimental-features = nix-command flakes
-    '';
-  };
   # #
 
   # Misc programs #
@@ -146,12 +173,6 @@
   programs.adb.enable = true;
   # Steam
   programs.steam.enable = true;
-  # #
-
-  # Linux console #
-  services.kmscon.enable = false;
-  # General Purpose Mouse daemon, which enables mouse support in virtual consoles
-  services.gpm.enable = true;
   # #
 
   # FIXME
@@ -162,11 +183,6 @@
   location.latitude = 47.36;
   location.longitude = -122.19;
   location.provider = "manual";
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-  services.openssh.settings.X11Forwarding = false;
-  # #
 
   # keybase service
   services.keybase.enable = false;
@@ -208,6 +224,7 @@
   hardware.enableAllFirmware = true;
   hardware.enableRedistributableFirmware = true;
 
+  # bluetooth
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
@@ -247,10 +264,6 @@
   };
   # #
 
-  # anti virus #
-  services.clamav.daemon.enable = true;
-  services.clamav.updater.enable = true;
-
   # xdg; TODO: learn more
   xdg.portal.enable = false;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
@@ -273,21 +286,10 @@
   virtualisation.lxd.enable = false;
   # #
 
-  ## overlays ##
-  nixpkgs.overlays = [
-    (self: super: {
-      mpv-unwrapped = super.mpv-unwrapped.override {
-        libbluray = super.libbluray.override {
-          withAACS = true;
-          withBDplus = true;
-        };
-      };
-    })
-  ];
-  # #
-
-  # system and users # 
+  # system and users #
   environment.pathsToLink = [ "/share/zsh" ];
+  # TODO:
+  # browsers should be set in home manager
   environment.systemPackages = with pkgs; [
     bluez-tools
     cwm
@@ -306,6 +308,9 @@
     opera
     polybar
     sops
+    # TODO:
+    # move to home manager but good
+    # example of non-home manager setup
     (vscode-with-extensions.override {
       vscodeExtensions = with vscode-extensions; [
         bbenoist.nix
