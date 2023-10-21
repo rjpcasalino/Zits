@@ -40,7 +40,6 @@
   networking.wireless.enable = true;
   networking.wireless.userControlled.enable = true;
   networking.wireless.scanOnLowSignal = false;
-  # use wpa_passphrase
   # we don't need to blacklist these bssid anymore
   # but good example of how to do so.
   # FIXME:
@@ -75,9 +74,10 @@
 
   # Firewall
   networking.firewall.enable = true;
-  # synergy is 51413. Not sure about 24800
-  networking.firewall.allowedTCPPorts = [ 24800 51413 ];
+  # synergy is 51413
+  networking.firewall.allowedTCPPorts = [ 51413 ];
   # networking.firewall.allowedUDPPorts = [ 53 ];
+
   # #
 
   # Internationalisation properties #
@@ -273,58 +273,25 @@
   # #
 
   # system and users # 
+  environment.pathsToLink = [ "/share/zsh" ];
   environment.systemPackages = with pkgs; [
-    arandr
-    awscli2
     bluez-tools
-    curl
     cwm
-    cmus
     clamav
-    direnv
-    du-dust
     docker-compose
-    ed
     firefox
-    fd
-    feh
-    ffmpeg-full
-    git
-    go
-    gopls
     google-chrome
     # used in SOPs
     # replace with age?
     gnupg
-    # used @ work
-    grpcui
     #
-    jq
     libbluray
     libaacs
-    makemkv
     mpv-unwrapped # see overlays
     microsoft-edge
-    nixpkgs-fmt
-    nixpkgs-review
-    neofetch
-    oneko
     opera
     polybar
-    pamixer
-    qemu
-    ripgrep
-    rnix-lsp # nix lang server
-    redshift
-    rpi-imager
-    scrot
-    screen
-    spotify
-    slack
-    synergy
     sops
-    unzip
-    vim
     (vscode-with-extensions.override {
       vscodeExtensions = with vscode-extensions; [
         bbenoist.nix
@@ -336,14 +303,6 @@
         ms-vscode.makefile-tools
       ];
     })
-    wget
-    wireshark
-    xdg-utils
-    xscreensaver
-    xorg.xmodmap
-    xorg.xev
-    xorg.libXft
-    zoom-us
   ];
   users.users.rjpc = {
     isNormalUser = true;
@@ -359,11 +318,6 @@
       "scanner"
       "lp"
     ];
-    shell = "${pkgs.bashInteractive}${pkgs.bashInteractive.shellPath}";
-  };
-  users.users.truman = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" "audio" "docker" "sound" ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
   };
   system.stateVersion = "22.11";
