@@ -35,21 +35,23 @@
   # #
 
   # Networking #
-  networking.wireless.environmentFile = config.sops.secrets."wireless.env".path;
   networking.hostName = "zits";
-  networking.wireless.enable = true;
-  networking.wireless.userControlled.enable = true;
-  networking.wireless.scanOnLowSignal = false;
-  # we don't need to blacklist these bssid anymore
-  # but good example of how to do so.
-  # FIXME:
-  # pksRaw no longer works for WPA3
-  networking.wireless.networks = {
-    "@ssid@" = {
-      psk = "@psk@";
-      extraConfig = ''
-        bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
-      '';
+  networking.wireless = {
+    enable = true;
+    environmentFile = config.sops.secrets."wireless.env".path;
+    userControlled.enable = true;
+    scanOnLowSignal = false;
+    # we don't need to blacklist these bssid anymore
+    # but good example of how to do so.
+    # FIXME:
+    # pksRaw no longer works for WPA3
+    networks = {
+      "@ssid@" = {
+        psk = "@psk@";
+        extraConfig = ''
+          bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
+        '';
+      };
     };
   };
   networking.nat.enable = false;
@@ -144,12 +146,6 @@
   programs.adb.enable = true;
   # Steam
   programs.steam.enable = true;
-  # #
-
-  # bash #
-  programs.bash.promptInit = ''
-    PS1="\n\[\033[01;32m\]\u $\[\033[00m\]\[\033[01;36m\] \w >\[\033[00m\]\n"
-  '';
   # #
 
   # Linux console #
