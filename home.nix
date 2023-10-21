@@ -37,6 +37,7 @@
     slack
     synergy
     unzip
+    vim
     wget
     xdg-utils
     xscreensaver
@@ -73,7 +74,8 @@
   programs.git = {
     enable = true;
   };
+  # until I get my plugins working
   programs.vim = {
-    enable = true;
+    enable = false;
   };
 }
