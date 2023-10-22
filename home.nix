@@ -28,7 +28,6 @@
     qemu
     rnix-lsp # nix lang server
     redshift
-    ripgrep
     rpi-imager
     scrot
     screen
@@ -50,6 +49,7 @@
   programs.home-manager.enable = true;
 
   programs.chromium.enable = true;
+
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;
@@ -91,7 +91,20 @@
     };
   };
 
-  programs.jq.enable = true;
+  programs.jq = {
+    enable = true;
+    colors = {
+      null = "1;30";
+      false = "0;31";
+      true = "0;32";
+      numbers = "0;36";
+      strings = "0;33";
+      arrays = "1;35";
+      objects = "1;37";
+    };
+  };
+
+  programs.ripgrep.enable = true;
 
   programs.vim = {
     enable = true;
@@ -124,8 +137,6 @@
       set spelllang=en_us
       set paste
       set list
-      " a space is required after
-      " tab:▸\
       set listchars=eol:¬,tab:▸\ ,trail:·
       set wildmenu
       set wildmode=longest,list,full
@@ -134,24 +145,12 @@
       silent !mkdir -p ~/.vim/{backup,swp}/
       set backupdir=~/.vim/backup/
       set directory=~/.vim/swp/
-      noremap <F11> :tabprevious<CR>
-      noremap <F12> :tabnext<CR>
-      "" Nav between buffer windows
-      " this should be the ALT or META key
-      " i.e, <A-*> or <M-*>
-      " but this might clash with cwm alt usage?
-      " anyway, use shift instead if one wants by uncommenting:
-      "noremap <S-H> <C-W><C-H>
-      "noremap <S-J> <C-W><C-J>
-      "noremap <S-K> <C-W><C-K>
-      "noremap <S-L> <C-W><C-L>
       let g:netrw_preview = 1
       let g:netrw_banner = 1
       let g:netrw_liststyle = 3
       let g:netrw_winsize = 25
-      " autocmd adds to the list of autocommands regardless of 
-      " whether they are already present
-      " so we use augroup to avoid that issue
+      noremap <F11> :tabprevious<CR>
+      noremap <F12> :tabnext<CR>
       augroup vimrc
         autocmd!
         au BufRead,BufNewFile *.md,*.txt,*.man,*.ms setlocal spell
