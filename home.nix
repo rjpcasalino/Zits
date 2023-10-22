@@ -118,7 +118,9 @@
       set spelllang=en_us
       set paste
       set list
-      set listchars=eol:¬,tab:▸▸
+      " a space is required after
+      " tab:▸\
+      set listchars=eol:¬,tab:▸\ ,trail:·
       set wildmenu
       set wildmode=longest,list,full
       " don't pollute dirs with swap files
