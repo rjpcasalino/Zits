@@ -20,10 +20,12 @@
     gopls
     grpcui
     makemkv
+    microsoft-edge
     nixpkgs-fmt
     nixpkgs-review
     neofetch
     oneko
+    opera
     pamixer
     qemu
     rnix-lsp # nix lang server
@@ -60,7 +62,10 @@
       "dc" = "docker-compose";
       "de" = "docker exec -it";
       "dps" = "docker ps";
+      "dnls" = "docker network ls";
+      "dnin" = "docker network inspect";
       "ddie" = "docker system prune -a --volumes";
+      "nd" = "nix develop";
       "g" = "git";
       "zits" = "sudo nixos-rebuild switch --flake .#zits";
     };
@@ -108,17 +113,16 @@
 
   programs.vim = {
     enable = true;
-    plugins = [
-      pkgs.vimPlugins.csv-vim
-      pkgs.vimPlugins.csv
-      pkgs.vimPlugins.lightline-vim
-      pkgs.vimPlugins.vim-nix
-      pkgs.vimPlugins.matchit-zip
-      pkgs.vimPlugins.vim-go
-      pkgs.vimPlugins.colorizer
-      pkgs.vimPlugins.editorconfig-vim
-      pkgs.vimPlugins.vim-terraform
-      pkgs.vimPlugins.vim-lsp
+    plugins = with pkgs.vimPlugins; [
+      colorizer
+      csv-vim
+      csv
+      lightline-vim
+      matchit-zip
+      vim-go
+      vim-nix
+      vim-terraform
+      vim-lsp
     ];
     settings = {
       background = "light";
