@@ -19,7 +19,6 @@
     go
     gopls
     grpcui
-    jq
     makemkv
     nixpkgs-fmt
     nixpkgs-review
@@ -50,6 +49,7 @@
 
   programs.home-manager.enable = true;
 
+  programs.chromium.enable = true;
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;
@@ -86,6 +86,8 @@
       p = "push";
     };
   };
+
+  programs.jq.enable = true;
 
   programs.vim = {
     enable = true;
