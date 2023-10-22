@@ -12,7 +12,8 @@
   boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" ];
-  # this is for wifi and bluetooth antenna (one that I used long ago)
+  # FIXME:
+  # this is for wifi and bluetooth antenna don't use anymore
   boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
   boot.extraModprobeConfig = ''
     options iwlwifi power_save=N
@@ -26,8 +27,6 @@
   # nix and nixpkgs #
   # FIXME: seems config.nix conflicts with this
   nixpkgs.config.allowUnfree = true;
-  # for BLE stuff? broken?
-  # nixpkgs.config.segger-jlink.acceptLicense = true;
   nix = {
     package = pkgs.nixUnstable;
     settings.auto-optimise-store = true;
@@ -61,6 +60,8 @@
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
     colors = [
+      # TODO:
+      # map these colors with comments
       "002b36"
       "dc322f"
       "859900"
@@ -178,8 +179,8 @@
   # CUPS and SANE #
   services.printing.enable = true;
   # If true and not using printer often
-  # the jounrnal will get polluted with messages...
-  # also needed for geoclue and redshift?
+  # the jounrnal will get polluted with messages
+  # Also needed for geoclue and redshift?
   services.avahi.enable = true;
   # Enable SANE for scanning
   hardware.sane.enable = true;
@@ -251,7 +252,8 @@
   };
   # #
 
-  # xdg; TODO: learn more
+  # TODO: 
+  # learn more
   xdg.portal.enable = false;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   # #
@@ -291,8 +293,6 @@
     libbluray
     libaacs
     mpv-unwrapped # see overlays
-    microsoft-edge
-    opera
     polybar
     sops
     # TODO:
