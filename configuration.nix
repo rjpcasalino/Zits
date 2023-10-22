@@ -9,7 +9,7 @@
   # systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.grub.useOSProber = true;
+  boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" ];
   # this is for wifi and bluetooth antenna (one that I used long ago)
@@ -123,6 +123,7 @@
 
   # Networking #
   networking.hostName = "zits";
+  networking.enableIPv6 = true;
   networking.wireless = {
     enable = true;
     environmentFile = config.sops.secrets."wireless.env".path;
@@ -131,7 +132,7 @@
     # we don't need to blacklist these bssid anymore
     # but good example of how to do so.
     # FIXME:
-    # pksRaw no longer works for WPA3
+    # pksRaw no longer works for WPA3?
     networks = {
       "@ssid@" = {
         psk = "@psk@";
@@ -141,23 +142,16 @@
       };
     };
   };
-  networking.nat.enable = false;
-  # networking.nat.internalInterfaces = [ ];
-  # networking.nat.externalInterface = "enp5s0";
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
   # note: the hosts mode is to allow vpn split to work for mct
   environment.etc.hosts.mode = "0644";
   # not sure this extraHosts stuff is working
-  networking.networkmanager.enable = false;
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
   '';
-  # The global useDHCP flag is deprecated
-  networking.useDHCP = false;
   networking.interfaces.enp7s0.useDHCP = true;
   networking.interfaces.wlp6s0.useDHCP = true;
   networking.nameservers = [ "192.168.0.149" ];
-  networking.enableIPv6 = true;
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
 
@@ -165,12 +159,11 @@
   networking.firewall.enable = true;
   # synergy is 51413
   networking.firewall.allowedTCPPorts = [ 51413 ];
-  # networking.firewall.allowedUDPPorts = [ 53 ];
   # #
 
   # Misc programs #
   # Android
-  programs.adb.enable = true;
+  programs.adb.enable = false;
   # Steam
   programs.steam.enable = true;
   # #
@@ -179,11 +172,6 @@
   # this wasn't working so do it
   # hard way via xinitrc
   services.redshift.enable = false;
-  # for redshift
-  location.latitude = 47.36;
-  location.longitude = -122.19;
-  location.provider = "manual";
-
   # keybase service
   services.keybase.enable = false;
 
@@ -250,7 +238,6 @@
     exportConfiguration = true;
     displayManager.startx.enable = true;
     windowManager.cwm.enable = true;
-    windowManager.i3.enable = false;
     # this will pick amdgpu by default
     videoDrivers = [ "modesetting" ];
     libinput = {
