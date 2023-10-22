@@ -57,6 +57,10 @@
       ll = "ls -l";
       ".." = "cd ..";
       "..." = "cd ../..";
+      "dc" = "docker-compose";
+      "de" = "docker exec -it";
+      "dps" = "docker ps";
+      "ddie" = "docker system prune -a --volumes";
       "g" = "git";
       "zits" = "sudo nixos-rebuild switch --flake .#zits";
     };
