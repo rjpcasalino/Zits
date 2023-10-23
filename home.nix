@@ -113,7 +113,8 @@
 
   programs.vim = {
     enable = true;
-    plugins = with pkgs.vimPlugins; [
+    plugins =  builtins.attrValues {
+      inherit (pkgs.vimPlugins)
       colorizer
       csv-vim
       csv
@@ -122,8 +123,8 @@
       vim-go
       vim-nix
       vim-terraform
-      vim-lsp
-    ];
+      vim-lsp;
+    };
     settings = {
       background = "light";
       mouse = "a";
