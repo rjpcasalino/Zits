@@ -254,7 +254,7 @@
 
   # TODO: 
   # learn more
-  xdg.portal.enable = false;
+  xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   # #
 
