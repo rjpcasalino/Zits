@@ -48,6 +48,10 @@
 
   home.stateVersion = "22.05";
 
+  home.sessionVariables = {
+    EDITOR = "vim";
+  };
+
   programs.home-manager.enable = true;
 
   programs.chromium.enable = true;
@@ -77,7 +81,12 @@
       setopt PROMPT_SUBST
       autoload -U colors && colors
       source $HOME/.git-prompt.sh
-      export PS1='%F{magenta}%n%f %B%F{blue}%~%f $(__git_ps1 "(%s) ")%b%# '
+      eval "$(direnv hook zsh)"
+      if [[ "$SSH_TTY" ]]; then
+        export PS1='%F{#C600E8}SSH on %m%f %F{magenta}%n%f %B%F{red}%~%f $(__git_ps1 "(%s) ")%b%# '
+      else
+        export PS1='%F{magenta}%n%f %B%F{blue}%~%f $(__git_ps1 "(%s) ")%b%# '
+      fi;
     '';
   };
 
