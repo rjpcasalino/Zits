@@ -8,7 +8,6 @@
     arandr
     awscli2
     curl
-    cmus
     direnv
     du-dust
     ed
@@ -82,6 +81,7 @@
       autoload -U colors && colors
       source $HOME/.git-prompt.sh
       eval "$(direnv hook zsh)"
+      bindkey -e
       if [[ "$SSH_TTY" ]]; then
         export PS1='%F{#C600E8}SSH on %m%f %F{magenta}%n%f %B%F{red}%~%f $(__git_ps1 "(%s) ")%b%# '
       else
