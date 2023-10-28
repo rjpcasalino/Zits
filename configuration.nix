@@ -304,7 +304,6 @@
         dracula-theme.theme-dracula
         golang.go
         mechatroner.rainbow-csv
-        ms-python.python
         ms-azuretools.vscode-docker
         ms-vscode.makefile-tools
         naumovs.color-highlight
