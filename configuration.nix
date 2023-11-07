@@ -31,9 +31,10 @@
     package = pkgs.nixUnstable;
     settings.auto-optimise-store = true;
     extraOptions = ''
-      experimental-features = nix-command flakes
+      experimental-features = nix-command flakes repl-flake
     '';
   };
+  nix.channel.enable = false;
   # #
 
   ## overlays ##
@@ -169,10 +170,9 @@
   programs.steam.enable = true;
   # #
 
-  # FIXME
-  # this wasn't working so do it
-  # hard way via xinitrc
-  services.redshift.enable = false;
+  services.redshift.enable = true;
+  location.latitude = 47.608013;
+  location.longitude = -122.335167;
   # keybase service
   services.keybase.enable = false;
 
@@ -235,9 +235,22 @@
   services.xserver = {
     enable = true;
     layout = "us";
-    autorun = false;
+    autorun = true;
     exportConfiguration = true;
-    displayManager.startx.enable = true;
+    displayManager.startx.enable = false;
+    displayManager.lightdm = {
+      enable = true;
+      background = pkgs.nixos-artwork.wallpapers.nineish-dark-gray.gnomeFilePath;
+      greeters.gtk.indicators = [
+        "~host"
+        "~spacer"
+        "~clock"
+        "~spacer"
+        "~session"
+        "~power"
+      ];
+      greeters.gtk.clock-format = "%A %F %I:%M%p";
+    };
     windowManager.cwm.enable = true;
     # this will pick amdgpu by default
     videoDrivers = [ "modesetting" ];
@@ -254,7 +267,7 @@
 
   # TODO: 
   # learn more
-  xdg.portal.enable = true;
+  xdg.portal.enable = false;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   # #
 
@@ -281,7 +294,6 @@
   # browsers should be set in home manager
   environment.systemPackages = with pkgs; [
     bluez-tools
-    cwm
     clamav
     docker-compose
     firefox
