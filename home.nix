@@ -28,7 +28,6 @@
     pamixer
     qemu
     rnix-lsp # nix lang server
-    redshift
     rpi-imager
     scrot
     screen
@@ -68,6 +67,7 @@
       "dnls" = "docker network ls";
       "dnin" = "docker network inspect";
       "ddie" = "docker system prune -a --volumes";
+      "fd" = "fd -c never"; # never use color output on fd
       "nd" = "nix develop";
       "g" = "git";
       "zits" = "sudo nixos-rebuild switch --flake .#zits";
