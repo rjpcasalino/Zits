@@ -304,6 +304,7 @@
     #
     libbluray
     libaacs
+    man-pages
     mpv-unwrapped # see overlays
     polybar
     sops
