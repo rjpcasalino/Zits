@@ -7,9 +7,11 @@
     age
     arandr
     awscli2
+    bc
     curl
     direnv
     du-dust
+    deploy-rs
     ed
     fd
     feh
@@ -146,6 +148,8 @@
       endif
       colorscheme default
       syntax on
+      set expandtab
+      set tabstop=4
       set ruler
       set hlsearch
       set spelllang=en_us
