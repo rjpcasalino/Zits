@@ -140,7 +140,7 @@
       background = "light";
       mouse = "a";
       number = true;
-      tabstop = 8;
+      tabstop = 4;
     };
     extraConfig = ''
       if !has('gui_running')
