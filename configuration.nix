@@ -30,8 +30,9 @@
   nix = {
     package = pkgs.nixUnstable;
     settings.auto-optimise-store = true;
+    # auto-allocate-uids started throwing warnings with recent update to Uakari
     extraOptions = ''
-      experimental-features = nix-command flakes repl-flake
+      experimental-features = nix-command flakes repl-flake configurable-impure-env auto-allocate-uids
     '';
   };
   nix.channel.enable = false;
@@ -153,7 +154,7 @@
   '';
   networking.interfaces.enp7s0.useDHCP = true;
   networking.interfaces.wlp6s0.useDHCP = true;
-  networking.nameservers = [ "192.168.0.149" ];
+  #networking.nameservers = [ ];
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
 
@@ -184,7 +185,7 @@
   services.avahi.enable = true;
   # Enable SANE for scanning
   hardware.sane.enable = true;
-  services.avahi.nssmdns = true;
+  services.avahi.nssmdns4 = true;
   # Needed since this is an HP scanner 
   # hardware.sane.extraBackends = [ pkgs.hplipWithPlugin ];
   # use below as above does not seem to scan but sees scanner
