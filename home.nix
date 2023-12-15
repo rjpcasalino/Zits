@@ -25,6 +25,7 @@
     nixpkgs-fmt
     nixpkgs-review
     neofetch
+    nodejs_18 # for copolit-vim
     oneko
     opera
     pamixer
@@ -43,6 +44,7 @@
     xorg.xmodmap
     xorg.xev
     xorg.libXft
+    zathura
     zoom-us
   ];
 
@@ -127,6 +129,7 @@
     plugins =  builtins.attrValues {
       inherit (pkgs.vimPlugins)
       colorizer
+      copilot-vim
       csv-vim
       csv
       lightline-vim
@@ -146,6 +149,7 @@
       if !has('gui_running')
         set t_Co=256
       endif
+      let g:copilot_enabled = v:false
       colorscheme default
       syntax on
       set expandtab
@@ -153,7 +157,6 @@
       set ruler
       set hlsearch
       set spelllang=en_us
-      set paste
       set list
       set listchars=eol:¬,tab:▸\ ,trail:·
       set wildmenu
@@ -171,7 +174,7 @@
       noremap <F12> :tabnext<CR>
       augroup vimrc
         autocmd!
-        au BufRead,BufNewFile *.md,*.txt,*.man,*.ms setlocal spell
+        au BufRead,BufNewFile *.tex,*.md,*.txt,*.man,*.ms setlocal spell
         hi clear SpellBad
         hi SpellBad cterm=underline,bold ctermfg=red
       augroup END
