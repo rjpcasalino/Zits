@@ -28,6 +28,7 @@
     nodejs_18 # for copolit-vim
     oneko
     opera
+    opentofu
     pamixer
     qemu
     rnix-lsp # nix lang server

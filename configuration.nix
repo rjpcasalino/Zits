@@ -28,11 +28,12 @@
   # FIXME: seems config.nix conflicts with this
   nixpkgs.config.allowUnfree = true;
   nix = {
+    settings.trusted-users = [ "root" "rjpc" ];
     package = pkgs.nixUnstable;
     settings.auto-optimise-store = true;
     # auto-allocate-uids started throwing warnings with recent update to Uakari
     extraOptions = ''
-      experimental-features = nix-command flakes repl-flake configurable-impure-env auto-allocate-uids
+      experimental-features = nix-command flakes configurable-impure-env auto-allocate-uids
     '';
   };
   nix.channel.enable = false;
@@ -241,7 +242,8 @@
     displayManager.startx.enable = false;
     displayManager.lightdm = {
       enable = true;
-      background = pkgs.nixos-artwork.wallpapers.nineish-dark-gray.gnomeFilePath;
+      #background = pkgs.nixos-artwork.wallpapers.nineish-dark-gray.gnomeFilePath;
+      background = /. + "/home/rjpc/Pictures/Uranus-Wide-Field.png";
       greeters.gtk.indicators = [
         "~host"
         "~spacer"
