@@ -22,6 +22,7 @@
     options iwlmvm power_scheme=1
   '';
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
+  boot.tmp.cleanOnBoot = true;
   # #
 
   # nix and nixpkgs #
@@ -33,7 +34,7 @@
     settings.auto-optimise-store = true;
     # auto-allocate-uids started throwing warnings with recent update to Uakari
     extraOptions = ''
-      experimental-features = nix-command flakes configurable-impure-env auto-allocate-uids
+      experimental-features = nix-command flakes auto-allocate-uids configurable-impure-env
     '';
   };
   nix.channel.enable = false;
@@ -161,8 +162,8 @@
 
   # Firewall
   networking.firewall.enable = true;
-  # synergy is 51413
-  networking.firewall.allowedTCPPorts = [ 51413 ];
+  # synergy is 24800
+  networking.firewall.allowedTCPPorts = [ 24800 ];
   # #
 
   # Misc programs #
@@ -170,6 +171,14 @@
   programs.adb.enable = false;
   # Steam
   programs.steam.enable = true;
+  services.udev.extraRules = ''
+    # PS5 DualSense controller over USB hidraw
+    KERNEL=="hidraw*", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", MODE="0660", TAG+="uaccess"
+
+    # PS5 DualSense controller over bluetooth hidraw
+    KERNEL=="hidraw*", KERNELS=="*054C:0CE6*", MODE="0660", TAG+="uaccess"
+  '';
+
   # #
 
   services.redshift.enable = true;
@@ -243,7 +252,8 @@
     displayManager.lightdm = {
       enable = true;
       #background = pkgs.nixos-artwork.wallpapers.nineish-dark-gray.gnomeFilePath;
-      background = /. + "/home/rjpc/Pictures/Uranus-Wide-Field.png";
+      #background = /. + "/home/rjpc/Pictures/Uranus-Wide-Field.png";
+      background = /. + "/home/rjpc/Pictures/windows-xp-bliss-4k-lu.jpg";
       greeters.gtk.indicators = [
         "~host"
         "~spacer"
@@ -268,7 +278,7 @@
   };
   # #
 
-  # TODO: 
+  # TODO:
   # learn more
   xdg.portal.enable = false;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
