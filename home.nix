@@ -73,6 +73,7 @@
       "dnin" = "docker network inspect";
       "ddie" = "docker system prune -a --volumes";
       "fd" = "fd -c never"; # never use color output on fd
+      "ls" = "ls --color=auto";
       "nd" = "nix develop";
       "g" = "git";
       "zits" = "sudo nixos-rebuild switch --flake .#zits";
