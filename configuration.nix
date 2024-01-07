@@ -251,6 +251,7 @@
     enable = true;
     layout = "us";
     autorun = true;
+    xkb.options = "compose:ralt";
     exportConfiguration = true;
     displayManager.startx.enable = false;
     displayManager.lightdm = {
