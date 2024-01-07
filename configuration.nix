@@ -26,8 +26,12 @@
   # #
 
   # nix and nixpkgs #
-  # FIXME: seems config.nix conflicts with this
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs = {
+    config = {
+      allowUnfree = true;
+      enableParallelBuildingByDefault = false;
+    };
+  };
   nix = {
     settings.trusted-users = [ "root" "rjpc" ];
     package = pkgs.nixUnstable;
@@ -280,7 +284,7 @@
 
   # TODO:
   # learn more
-  xdg.portal.enable = false;
+  xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   # #
 
