@@ -58,7 +58,7 @@
       serviceConfig = {
         User = config.users.users.rjpc.name;
       };
-      startAt = "minutely";
+      startAt = "hourly";
     };
   };
   # #
