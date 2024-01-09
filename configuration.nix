@@ -44,6 +44,25 @@
   nix.channel.enable = false;
   # #
 
+  # systemd services #
+  systemd.services = {
+    backup-diary-service = {
+      path = [
+        pkgs.openssh
+      ];
+      script = ''
+        cp /home/rjpc/EXSSD/diary.merged ~ \
+        && scp /home/rjpc/EXSSD/diary.merged rjpc@nemo.home.arpa:~
+      ''
+      ;
+      serviceConfig = {
+        User = config.users.users.rjpc.name;
+      };
+      startAt = "minutely";
+    };
+  };
+  # #
+
   ## overlays ##
   nixpkgs.overlays = [
     (self: super: {
