@@ -13,11 +13,11 @@
     };
   };
 
-  # Accepting unexpected attributes in argument set i.e., @
-  outputs = inputs@{ self, nixpkgs, home-manager, sops-nix, ... }: {
+  outputs = { self, nixpkgs, home-manager, sops-nix, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      specialArgs = { inherit inputs; };
       modules = with self.nixosModules; [
         ./configuration.nix
         sops-nix.nixosModules.sops
