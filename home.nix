@@ -128,8 +128,20 @@
 
   programs.vim = {
     enable = true;
-    plugins =  builtins.attrValues {
-      inherit (pkgs.vimPlugins)
+    #plugins =  builtins.attrValues {
+    #  inherit (pkgs.vimPlugins)
+    #  colorizer
+    #  copilot-vim
+    #  csv-vim
+    #  csv
+    #  lightline-vim
+    #  matchit-zip
+    #  #vim-go
+    #  vim-nix
+    #  vim-terraform
+    #  vim-lsp;
+    #};
+    plugins =  with pkgs.vimPlugins; [
       colorizer
       copilot-vim
       csv-vim
@@ -139,8 +151,8 @@
       vim-go
       vim-nix
       vim-terraform
-      vim-lsp;
-    };
+      vim-lsp
+    ];
     settings = {
       background = "light";
       mouse = "a";
