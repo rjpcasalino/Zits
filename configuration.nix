@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   imports = [
@@ -12,9 +12,7 @@
   boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" ];
-  # FIXME:
-  # this is for wifi and bluetooth antenna don't use anymore
-  boot.extraModulePackages = [ config.boot.kernelPackages.rtl88x2bu ];
+  boot.extraModulePackages = [ ];
   boot.extraModprobeConfig = ''
     options iwlwifi power_save=N
     options iwlwifi 11n_disable=8 bt_coex_active=Y
@@ -32,16 +30,21 @@
       enableParallelBuildingByDefault = false;
     };
   };
+  # FIXME: this nixPath nonsense...
+  # specialArgs = { inherit inputs; }—dumb
+  # registry.nixpkgs.flake = inputs.nixpkgs—ugh
   nix = {
     settings.trusted-users = [ "root" "rjpc" ];
+    nixPath = [ "nixpkgs=flake:nixpkgs" ];
     package = pkgs.nixUnstable;
     settings.auto-optimise-store = true;
     # auto-allocate-uids started throwing warnings with recent update to Uakari
     extraOptions = ''
       experimental-features = nix-command flakes auto-allocate-uids configurable-impure-env
     '';
+    channel.enable = true;
+    registry.nixpkgs.flake = inputs.nixpkgs;
   };
-  nix.channel.enable = false;
   # #
 
   # systemd services #
