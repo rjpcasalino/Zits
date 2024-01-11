@@ -279,8 +279,7 @@
     displayManager.lightdm = {
       enable = true;
       #background = pkgs.nixos-artwork.wallpapers.nineish-dark-gray.gnomeFilePath;
-      #background = /. + "/home/rjpc/Pictures/Uranus-Wide-Field.png";
-      background = /. + "/home/rjpc/Pictures/windows-xp-bliss-4k-lu.jpg";
+      background = /. + "/home/rjpc/Pictures/10-4-6k.jpg";
       greeters.gtk.indicators = [
         "~host"
         "~spacer"
