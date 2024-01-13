@@ -62,6 +62,12 @@
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true;
+    history = {
+      size = 20000;
+      save = 20000;
+      ignoreAllDups = true;
+      share = true;
+    };
     shellAliases = {
       ll = "ls -l";
       ".." = "cd ..";
