@@ -9,9 +9,9 @@
     awscli2
     bc
     curl
+    deploy-rs
     direnv
     du-dust
-    deploy-rs
     ed
     fd
     feh
@@ -22,29 +22,29 @@
     grpcui
     makemkv
     microsoft-edge
+    neofetch
     nixpkgs-fmt
     nixpkgs-review
-    neofetch
     nodejs_18 # for copolit-vim
     oneko
-    opera
     opentofu
+    opera
     pamixer
     qemu
     rnix-lsp # nix lang server
     rpi-imager
-    scrot
     screen
-    spotify
+    scrot
     slack
+    spotify
     synergy
     unzip
     wget
     xdg-utils
-    xscreensaver
-    xorg.xmodmap
-    xorg.xev
     xorg.libXft
+    xorg.xev
+    xorg.xmodmap
+    xscreensaver
     zathura
     zoom-us
   ];
