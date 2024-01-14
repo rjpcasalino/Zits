@@ -6,7 +6,6 @@
   ];
 
   ## boot ##
-  # systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = false;
@@ -23,13 +22,25 @@
   boot.tmp.cleanOnBoot = true;
   # #
 
-  # nix and nixpkgs #
+  # nixpkgs and nix #
+  # #
   nixpkgs = {
     config = {
       allowUnfree = true;
       enableParallelBuildingByDefault = false;
     };
   };
+  ## overlays ##
+  nixpkgs.overlays = [
+    (self: super: {
+      mpv-unwrapped = super.mpv-unwrapped.override {
+        libbluray = super.libbluray.override {
+          withAACS = true;
+          withBDplus = true;
+        };
+      };
+    })
+  ];
   # FIXME: this nixPath nonsense...
   # specialArgs = { inherit inputs; }—dumb
   # registry.nixpkgs.flake = inputs.nixpkgs—ugh
@@ -64,19 +75,6 @@
       startAt = "hourly";
     };
   };
-  # #
-
-  ## overlays ##
-  nixpkgs.overlays = [
-    (self: super: {
-      mpv-unwrapped = super.mpv-unwrapped.override {
-        libbluray = super.libbluray.override {
-          withAACS = true;
-          withBDplus = true;
-        };
-      };
-    })
-  ];
   # #
 
   # TIME ZONE
@@ -134,7 +132,7 @@
   security.rtkit.enable = true;
   security.doas.enable = true;
 
-  # anti virus #
+  # Anti-virus #
   services.clamav.daemon.enable = true;
   services.clamav.updater.enable = true;
   # #
@@ -143,12 +141,12 @@
   fonts.enableDefaultPackages = true;
   fonts.enableGhostscriptFonts = true;
   fonts.packages = with pkgs; [
+    emojione
+    material-design-icons
     nerdfonts
     noto-fonts
-    emojione
-    openmoji-color
     openmoji-black
-    material-design-icons
+    openmoji-color
   ];
   # #
 
@@ -182,7 +180,7 @@
   '';
   networking.interfaces.enp7s0.useDHCP = true;
   networking.interfaces.wlp6s0.useDHCP = true;
-  #networking.nameservers = [ ];
+  # networking.nameservers = [ ];
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
 
@@ -193,9 +191,7 @@
   # #
 
   # Misc programs #
-  # Android
   programs.adb.enable = false;
-  # Steam
   programs.steam.enable = true;
   services.udev.extraRules = ''
     # PS5 DualSense controller over USB hidraw
@@ -204,13 +200,12 @@
     # PS5 DualSense controller over bluetooth hidraw
     KERNEL=="hidraw*", KERNELS=="*054C:0CE6*", MODE="0660", TAG+="uaccess"
   '';
-
   # #
 
   services.redshift.enable = true;
   location.latitude = 47.608013;
   location.longitude = -122.335167;
-  # keybase service
+
   services.keybase.enable = false;
 
   # CUPS and SANE #
@@ -250,7 +245,6 @@
   hardware.enableAllFirmware = true;
   hardware.enableRedistributableFirmware = true;
 
-  # bluetooth
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
@@ -305,7 +299,7 @@
   # #
 
   # TODO:
-  # learn more
+  # learn more about xdg—still confusing to me
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   # #
@@ -336,13 +330,12 @@
     clamav
     docker-compose
     firefox
-    google-chrome
-    # used in SOPs
     # replace with age?
     gnupg
     #
-    libbluray
+    google-chrome
     libaacs
+    libbluray
     man-pages
     mpv-unwrapped # see overlays
     polybar
@@ -365,16 +358,16 @@
   users.users.rjpc = {
     isNormalUser = true;
     extraGroups = [
+      "adbusers"
+      "audio"
       "cdrom"
       "dialout"
-      "wheel"
-      "audio"
       "docker"
-      "sound"
-      "lxd"
-      "adbusers"
-      "scanner"
       "lp"
+      "lxd"
+      "scanner"
+      "sound"
+      "wheel"
     ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
   };
