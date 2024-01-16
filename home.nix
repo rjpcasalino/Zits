@@ -36,7 +36,6 @@
     screen
     scrot
     slack
-    spotify
     synergy
     unzip
     wget
