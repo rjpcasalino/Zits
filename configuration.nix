@@ -338,7 +338,6 @@
     libbluray
     man-pages
     mpv-unwrapped # see overlays
-    polybar
     sops
     # TODO:
     # move to home manager but good
