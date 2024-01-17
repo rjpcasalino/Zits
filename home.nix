@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   home.username = "rjpc";
@@ -146,7 +146,7 @@
     #  vim-terraform
     #  vim-lsp;
     #};
-    plugins =  with pkgs.vimPlugins; [
+    plugins = with pkgs.vimPlugins; [
       colorizer
       copilot-vim
       csv-vim
@@ -199,5 +199,15 @@
       augroup END
       runtime macros/matchit.vim
     '';
+  };
+  services.polybar = {
+    enable = true;
+    config = "/home/rjpc/polybar-scripts/polybar/config.ini";
+    script = "polybar zits &";
+  };
+  systemd.user.services.polybar = {
+    Install.WantedBy = [ "graphical-session.target" ];
+    # FIXME—this is trash
+    Service.Environment = lib.mkForce "PATH=/run/wrappers/bin:/run/current-system/sw/bin:/etc/profiles/per-user/rjpc/bin";
   };
 }
