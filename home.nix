@@ -68,19 +68,19 @@
       share = true;
     };
     shellAliases = {
-      ll = "ls -l";
       ".." = "cd ..";
       "..." = "cd ../..";
       "dc" = "docker-compose";
-      "de" = "docker exec -it";
-      "dps" = "docker ps";
-      "dnls" = "docker network ls";
-      "dnin" = "docker network inspect";
       "ddie" = "docker system prune -a --volumes";
+      "de" = "docker exec -it";
+      "dnin" = "docker network inspect";
+      "dnls" = "docker network ls";
+      "dps" = "docker ps";
       "fd" = "fd -c never"; # never use color output on fd
+      "g" = "git";
+      "ll" = "ls -l";
       "ls" = "ls --color=auto";
       "nd" = "nix develop";
-      "g" = "git";
       "zits" = "sudo nixos-rebuild switch --flake .#zits";
     };
     initExtra = ''
@@ -119,13 +119,13 @@
   programs.jq = {
     enable = true;
     colors = {
-      null = "1;30";
-      false = "0;31";
-      true = "0;32";
-      numbers = "0;36";
-      strings = "0;33";
       arrays = "1;35";
+      false = "0;31";
+      null = "1;30";
+      numbers = "0;36";
       objects = "1;37";
+      strings = "0;33";
+      true = "0;32";
     };
   };
 
