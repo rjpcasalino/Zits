@@ -300,8 +300,12 @@
 
   # TODO:
   # learn more about xdg—still confusing to me
-  xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  xdg.menus.enable = true;
+  xdg.portal = {
+    enable = true;
+    configPackages = [ pkgs.gnome.gnome-session ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+  };
   # #
 
   # Docker et al
