@@ -22,6 +22,19 @@
   boot.tmp.cleanOnBoot = true;
   # #
 
+  # documentation #
+  documentation = {
+    enable = true;
+    doc.enable = true;
+    man = {
+      enable = true;
+      generateCaches = true;
+    };
+    info.enable = true;
+  };
+
+  # #
+
   # nixpkgs and nix #
   # #
   nixpkgs = {
@@ -272,8 +285,7 @@
     displayManager.startx.enable = false;
     displayManager.lightdm = {
       enable = true;
-      #background = pkgs.nixos-artwork.wallpapers.nineish-dark-gray.gnomeFilePath;
-      background = /. + "/home/rjpc/Pictures/10-4-6k.jpg";
+      background = /. + "/home/rjpc/Pictures/nix-wallpaper-moonscape.png";
       greeters.gtk.indicators = [
         "~host"
         "~spacer"
@@ -340,7 +352,6 @@
     google-chrome
     libaacs
     libbluray
-    man-pages
     mpv-unwrapped # see overlays
     sops
     # TODO:
