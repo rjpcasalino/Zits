@@ -143,7 +143,11 @@
 
   # Security
   security.rtkit.enable = true;
-  security.doas.enable = true;
+  security.doas = {
+    enable = true;
+    wheelNeedsPassword = false;
+  };
+  security.sudo.wheelNeedsPassword = false;
 
   # Anti-virus #
   services.clamav.daemon.enable = true;
@@ -155,7 +159,6 @@
   fonts.enableGhostscriptFonts = true;
   fonts.packages = with pkgs; [
     emojione
-    material-design-icons
     nerdfonts
     noto-fonts
     openmoji-black
@@ -278,7 +281,7 @@
   hardware.opengl.driSupport = true;
   services.xserver = {
     enable = true;
-    layout = "us";
+    xkb.layout = "us";
     autorun = true;
     xkb.options = "compose:ralt";
     exportConfiguration = true;
