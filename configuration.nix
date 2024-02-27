@@ -144,7 +144,7 @@
   # Security
   security.rtkit.enable = true;
   security.doas = {
-    enable = true;
+    enable = false;
     wheelNeedsPassword = false;
   };
   security.sudo.wheelNeedsPassword = false;
@@ -328,7 +328,7 @@
     enable = true;
     logDriver = "journald";
     liveRestore = true;
-    package = pkgs.docker;
+    package = pkgs.docker_25;
   };
   virtualisation.docker.autoPrune = {
     enable = true;
@@ -347,11 +347,11 @@
   environment.systemPackages = with pkgs; [
     bluez-tools
     clamav
-    docker-compose
     firefox
     # replace with age?
     gnupg
     #
+    gnumake
     google-chrome
     libaacs
     libbluray
