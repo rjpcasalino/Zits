@@ -70,7 +70,7 @@
     shellAliases = {
       ".." = "cd ..";
       "..." = "cd ../..";
-      "dc" = "docker-compose";
+      "dc" = "docker compose";
       "ddie" = "docker system prune -a --volumes";
       "de" = "docker exec -it";
       "dnin" = "docker network inspect";
