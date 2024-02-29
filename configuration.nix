@@ -121,7 +121,11 @@
       "fdf6e3"
     ];
   };
-  # General Purpose Mouse daemon, which enables mouse support in virtual consoles
+  # Services #
+  services.gnome.gnome-keyring.enable = true;
+  # seahorse is a UI for keyring
+  programs.seahorse.enable = true;
+  # General Purpose Mouse daemon—enables mouse support in virtual consoles
   services.gpm.enable = true;
   services.kmscon.enable = false;
   # #
@@ -148,6 +152,7 @@
     wheelNeedsPassword = false;
   };
   security.sudo.wheelNeedsPassword = false;
+  # #
 
   # Anti-virus #
   services.clamav.daemon.enable = true;
@@ -364,6 +369,8 @@
       vscodeExtensions = with vscode-extensions; [
         bbenoist.nix
         dracula-theme.theme-dracula
+        eamodio.gitlens
+        enkia.tokyo-night
         golang.go
         mechatroner.rainbow-csv
         ms-azuretools.vscode-docker
