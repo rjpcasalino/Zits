@@ -1,5 +1,7 @@
 { config, pkgs, inputs, ... }:
 
+let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix {}; in
+
 {
   imports = [
     ./hardware-configuration.nix
@@ -10,13 +12,17 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" ];
-  boot.extraModulePackages = [ ];
+  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "8852bu" ];
+  boot.extraModulePackages = [ ax55 ];
+  # TODO:
+  # see if I need iwlwifi anymore
+  # 8852bu options
   boot.extraModprobeConfig = ''
     options iwlwifi power_save=N
     options iwlwifi 11n_disable=8 bt_coex_active=Y
     options iwldvm force_cam=Y
     options iwlmvm power_scheme=1
+    options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   '';
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
@@ -32,7 +38,6 @@
     };
     info.enable = true;
   };
-
   # #
 
   # nixpkgs and nix #
@@ -41,6 +46,9 @@
     config = {
       allowUnfree = true;
       enableParallelBuildingByDefault = false;
+      #permittedInsecurePackages = [ # was needed bc of rnix-lsp
+      #  "nix-2.15.3"
+      #];
     };
   };
   ## overlays ##
@@ -175,7 +183,8 @@
   networking.hostName = "zits";
   networking.enableIPv6 = true;
   networking.wireless = {
-    enable = true;
+    iwd.enable = true;
+    enable = false; # iwd enabled
     environmentFile = config.sops.secrets."wireless.env".path;
     userControlled.enable = true;
     scanOnLowSignal = false;
@@ -199,8 +208,11 @@
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
   '';
-  networking.interfaces.enp7s0.useDHCP = true;
-  networking.interfaces.wlp6s0.useDHCP = true;
+  networking.interfaces.enp5s0.useDHCP = true;
+  # networking.interfaces.wlp6s0.useDHCP = true; #
+  # iwd renames interface to wlan0 #
+  networking.interfaces.wlan0.useDHCP = true;
+  networking.interfaces.wlan1.useDHCP = true;
   # networking.nameservers = [ ];
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
@@ -277,7 +289,8 @@
         Experimental = "true";
       };
       Policy = { AutoEnable = "true"; };
-      LE = { EnableAdvMonInterleaveScan = "true"; };
+      # 1 is enabled and is enabled by default
+      LE = { EnableAdvMonInterleaveScan = "1"; };
     };
   };
 
@@ -293,7 +306,7 @@
     displayManager.startx.enable = false;
     displayManager.lightdm = {
       enable = true;
-      background = /. + "/home/rjpc/Pictures/nix-wallpaper-moonscape.png";
+      #background = /. + "/home/rjpc/Pictures/nix-wallpaper-moonscape.png";
       greeters.gtk.indicators = [
         "~host"
         "~spacer"
@@ -305,8 +318,6 @@
       greeters.gtk.clock-format = "%A %F %I:%M%p";
     };
     windowManager.cwm.enable = true;
-    # this will pick amdgpu by default
-    videoDrivers = [ "modesetting" ];
     libinput = {
       enable = true;
       mouse = {

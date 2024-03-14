@@ -20,6 +20,7 @@
     go
     gopls
     grpcui
+    lact
     makemkv
     microsoft-edge
     neofetch
@@ -30,14 +31,17 @@
     opentofu
     opera
     pamixer
+    pciutils
     qemu
-    rnix-lsp # nix lang server
+    # rnix-lsp # nix lang server
+    # rnix-lsp is using an insecure nix...
     rpi-imager
     screen
     scrot
     slack
     synergy
     unzip
+    usbutils
     wget
     xdg-utils
     xorg.libXft
