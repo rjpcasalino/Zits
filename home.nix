@@ -64,7 +64,7 @@
 
   programs.zsh = {
     enable = true;
-    enableAutosuggestions = true;
+    autosuggestion.enable = true;
     history = {
       size = 20000;
       save = 20000;
