@@ -1,6 +1,6 @@
 { config, pkgs, inputs, ... }:
 
-let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix {}; in
+let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
 
 {
   imports = [
@@ -13,17 +13,23 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix {}; in
   boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "8852bu" ];
+  # FIXME:
+  # ax55 taints kernel
   boot.extraModulePackages = [ ax55 ];
-  # TODO:
   # see if I need iwlwifi anymore
-  # 8852bu options
+  # iwlwifi options:
+  # options iwlwifi power_save=N
+  # options iwlwifi 11n_disable=8 bt_coex_active=Y
+  # options iwldvm force_cam=Y
+  # options iwlmvm power_scheme=1
+  # 8852bu options:
+  # options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   boot.extraModprobeConfig = ''
-    options iwlwifi power_save=N
-    options iwlwifi 11n_disable=8 bt_coex_active=Y
     options iwldvm force_cam=Y
     options iwlmvm power_scheme=1
     options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   '';
+  boot.kernelParams = [ ];
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
   # #
@@ -210,9 +216,10 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix {}; in
   '';
   networking.interfaces.enp5s0.useDHCP = true;
   # networking.interfaces.wlp6s0.useDHCP = true; #
+  # iwd does dhcp stuff
   # iwd renames interface to wlan0 #
-  networking.interfaces.wlan0.useDHCP = true;
-  networking.interfaces.wlan1.useDHCP = true;
+  # asus AX55 nano might be wlan0 one day and wlan1 the next
+  networking.interfaces.wlan0.useDHCP = false; # may not need this with iwd
   # networking.nameservers = [ ];
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
@@ -238,8 +245,6 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix {}; in
   services.redshift.enable = true;
   location.latitude = 47.608013;
   location.longitude = -122.335167;
-
-  services.keybase.enable = false;
 
   # CUPS and SANE #
   services.printing.enable = true;
@@ -326,6 +331,7 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix {}; in
         tappingButtonMap = "lmr";
       };
     };
+    desktopManager.wallpaper.mode = "center";
   };
   # #
 
