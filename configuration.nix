@@ -16,22 +16,15 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
   # FIXME:
   # ax55 taints kernel
   boot.extraModulePackages = [ ax55 ];
-  # see if I need iwlwifi anymore
-  # iwlwifi options:
-  # options iwlwifi power_save=N
-  # options iwlwifi 11n_disable=8 bt_coex_active=Y
-  # options iwldvm force_cam=Y
-  # options iwlmvm power_scheme=1
   # 8852bu options:
   # options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   boot.extraModprobeConfig = ''
-    options iwldvm force_cam=Y
-    options iwlmvm power_scheme=1
     options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   '';
   boot.kernelParams = [ ];
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
+  boot.loader.systemd-boot.consoleMode = "max";
   # #
 
   # documentation #
@@ -40,7 +33,7 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
     doc.enable = true;
     man = {
       enable = true;
-      generateCaches = true;
+      generateCaches = false;
     };
     info.enable = true;
   };
@@ -52,9 +45,6 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
     config = {
       allowUnfree = true;
       enableParallelBuildingByDefault = false;
-      #permittedInsecurePackages = [ # was needed bc of rnix-lsp
-      #  "nix-2.15.3"
-      #];
     };
   };
   ## overlays ##
@@ -142,6 +132,8 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
   # General Purpose Mouse daemon—enables mouse support in virtual consoles
   services.gpm.enable = true;
   services.kmscon.enable = false;
+  services.ollama.enable = true;
+  services.ollama.acceleration = false;
   # #
 
   # Internationalisation properties #
@@ -214,12 +206,12 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
   '';
-  networking.interfaces.enp5s0.useDHCP = true;
+  networking.interfaces.enp10s0.useDHCP = true;
   # networking.interfaces.wlp6s0.useDHCP = true; #
   # iwd does dhcp stuff
   # iwd renames interface to wlan0 #
   # asus AX55 nano might be wlan0 one day and wlan1 the next
-  networking.interfaces.wlan0.useDHCP = false; # may not need this with iwd
+  networking.interfaces.wlan1.useDHCP = true; # iwd does this
   # networking.nameservers = [ ];
   services.resolved.enable = false;
   services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];

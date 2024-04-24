@@ -26,15 +26,12 @@
     neofetch
     nixpkgs-fmt
     nixpkgs-review
-    nodejs_18 # for copolit-vim
     oneko
     opentofu
     opera
     pamixer
     pciutils
     qemu
-    # rnix-lsp # nix lang server
-    # rnix-lsp is using an insecure nix...
     rpi-imager
     screen
     scrot
