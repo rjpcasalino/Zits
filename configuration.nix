@@ -1,7 +1,5 @@
 { config, pkgs, inputs, ... }:
 
-#let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
-
 {
   imports = [
     ./hardware-configuration.nix
@@ -13,11 +11,8 @@
   boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "8852bu" ];
-  # FIXME:
-  # ax55 taints kernel
+  # is there a better way to ref 8852bu
   boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ];
-  # 8852bu options:
-  # options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   boot.extraModprobeConfig = ''
     options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   '';
@@ -40,7 +35,6 @@
   # #
 
   # nixpkgs and nix #
-  # #
   nixpkgs = {
     config = {
       allowUnfree = true;
