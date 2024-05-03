@@ -1,6 +1,6 @@
 { config, pkgs, inputs, ... }:
 
-let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
+#let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
 
 {
   imports = [
@@ -15,7 +15,7 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "8852bu" ];
   # FIXME:
   # ax55 taints kernel
-  boot.extraModulePackages = [ ax55 ];
+  boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ];
   # 8852bu options:
   # options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
   boot.extraModprobeConfig = ''
@@ -64,7 +64,7 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
   nix = {
     settings.trusted-users = [ "root" "rjpc" ];
     nixPath = [ "nixpkgs=flake:nixpkgs" ];
-    package = pkgs.nixUnstable;
+    package = pkgs.nixVersions.latest;
     settings.auto-optimise-store = true;
     # auto-allocate-uids started throwing warnings with recent update to Uakari
     extraOptions = ''
@@ -133,7 +133,7 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
   services.gpm.enable = true;
   services.kmscon.enable = false;
   services.ollama.enable = true;
-  services.ollama.acceleration = false;
+  services.ollama.acceleration = "rocm";
   # #
 
   # Internationalisation properties #
@@ -315,15 +315,15 @@ let ax55 = config.boot.kernelPackages.callPackage ./8852bu.nix { }; in
       greeters.gtk.clock-format = "%A %F %I:%M%p";
     };
     windowManager.cwm.enable = true;
-    libinput = {
-      enable = true;
-      mouse = {
-        middleEmulation = false;
-        tapping = false;
-        tappingButtonMap = "lmr";
-      };
-    };
     desktopManager.wallpaper.mode = "center";
+  };
+  services.libinput = {
+    enable = true;
+    mouse = {
+      middleEmulation = false;
+      tapping = false;
+      tappingButtonMap = "lmr";
+    };
   };
   # #
 
