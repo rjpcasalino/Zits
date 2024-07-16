@@ -10,12 +10,10 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "8852bu" ];
-  # is there a better way to ref 8852bu
+  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "nct6775" "rtl8852bu" ];
+  # [ pkgs.linuxPackages_latest.rtl8852bu ]
   boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ];
-  boot.extraModprobeConfig = ''
-    options 8852bu rtw_switch_usb_mode=0 rtw_he_enable=2 rtw_vht_enable=2 rtw_dfs_region_domain=1
-  '';
+  boot.extraModprobeConfig = '''';
   boot.kernelParams = [ ];
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
@@ -39,6 +37,7 @@
     config = {
       allowUnfree = true;
       enableParallelBuildingByDefault = false;
+      rocmSupport = true;
     };
   };
   ## overlays ##
@@ -126,8 +125,16 @@
   # General Purpose Mouse daemon—enables mouse support in virtual consoles
   services.gpm.enable = true;
   services.kmscon.enable = false;
-  services.ollama.enable = true;
-  services.ollama.acceleration = "rocm";
+  # ollama
+  services.ollama = {
+    enable = true;
+    acceleration = "rocm";
+    #rocmOverrideGfx = "11.0.0"; # nixpkgs-unstable
+    environmentVariables = {
+      OLLAMA_DEBUG = "1";
+      HSA_OVERRIDE_GFX_VERSION = "11.0.0";
+    };
+  };
   # #
 
   # Internationalisation properties #
@@ -136,6 +143,7 @@
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
+  services.openssh.allowSFTP = true;
   services.openssh.settings.X11Forwarding = false;
   # #
 
@@ -155,8 +163,8 @@
   # #
 
   # Anti-virus #
-  services.clamav.daemon.enable = true;
-  services.clamav.updater.enable = true;
+  services.clamav.daemon.enable = false;
+  services.clamav.updater.enable = false;
   # #
 
   # Fonts #
@@ -200,23 +208,165 @@
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
   '';
-  networking.interfaces.enp10s0.useDHCP = true;
   # networking.interfaces.wlp6s0.useDHCP = true; #
-  # iwd does dhcp stuff
   # iwd renames interface to wlan0 #
-  # asus AX55 nano might be wlan0 one day and wlan1 the next
-  networking.interfaces.wlan1.useDHCP = true; # iwd does this
+  networking.interfaces = {
+    enp10s0.useDHCP = false;
+    wlan0.useDHCP = true;
+  };
   # networking.nameservers = [ ];
-  services.resolved.enable = false;
-  services.resolved.fallbackDns = [ "8.8.8.8" "2001:4860:4860::8844" ];
 
   # Firewall
   networking.firewall.enable = true;
   # synergy is 24800
   networking.firewall.allowedTCPPorts = [ 24800 ];
+  # https://datatracker.ietf.org/doc/html/rfc6056
+  networking.firewall.allowedUDPPortRanges = [
+  {
+    from = 1;
+    to = 65535;
+  }
+];
   # #
 
   # Misc programs #
+  # Automatically creates a loader in /lib/* to avoid patching stuff
+  # To disable it temporarily use
+  # unset NIX_LD
+  programs.nix-ld = {
+    enable = false;
+    libraries = with pkgs; [
+      # List by default
+      zlib
+      zstd
+      stdenv.cc.cc
+      curl
+      openssl
+      attr
+      libssh
+      bzip2
+      libxml2
+      acl
+      libsodium
+      util-linux
+      xz
+      systemd
+
+      # My own additions
+      xorg.libXcomposite
+      xorg.libXtst
+      xorg.libXrandr
+      xorg.libXext
+      xorg.libX11
+      xorg.libXfixes
+      libGL
+      libva
+      pipewire
+      xorg.libxcb
+      xorg.libXdamage
+      xorg.libxshmfence
+      xorg.libXxf86vm
+      libelf
+
+      # Required
+      glib
+      gtk2
+
+      # Without these it silently fails
+      xorg.libXinerama
+      xorg.libXcursor
+      xorg.libXrender
+      xorg.libXScrnSaver
+      xorg.libXi
+      xorg.libSM
+      xorg.libICE
+      gnome2.GConf
+      nspr
+      nss
+      cups
+      libcap
+      SDL2
+      libusb1
+      dbus-glib
+      ffmpeg
+      # Only libraries are needed from those two
+      libudev0-shim
+
+      # needed to run unity
+      gtk3
+      icu
+      libnotify
+      gsettings-desktop-schemas
+      # https://github.com/NixOS/nixpkgs/issues/72282
+      # https://github.com/NixOS/nixpkgs/blob/2e87260fafdd3d18aa1719246fd704b35e55b0f2/pkgs/applications/misc/joplin-desktop/default.nix#L16
+      # log in /home/leo/.config/unity3d/Editor.log
+      # it will segfault when opening files if you don’t do:
+      # export XDG_DATA_DIRS=/nix/store/0nfsywbk0qml4faa7sk3sdfmbd85b7ra-gsettings-desktop-schemas-43.0/share/gsettings-schemas/gsettings-desktop-schemas-43.0:/nix/store/rkscn1raa3x850zq7jp9q3j5ghcf6zi2-gtk+3-3.24.35/share/gsettings-schemas/gtk+3-3.24.35/:$XDG_DATA_DIRS
+      # other issue: (Unity:377230): GLib-GIO-CRITICAL **: 21:09:04.706: g_dbus_proxy_call_sync_internal: assertion 'G_IS_DBUS_PROXY (proxy)' failed
+
+      # Verified games requirements
+      xorg.libXt
+      xorg.libXmu
+      libogg
+      libvorbis
+      SDL
+      SDL2_image
+      glew110
+      libidn
+      tbb
+
+      # Other things from runtime
+      flac
+      freeglut
+      libjpeg
+      libpng
+      libpng12
+      libsamplerate
+      libmikmod
+      libtheora
+      libtiff
+      pixman
+      speex
+      SDL_image
+      SDL_ttf
+      SDL_mixer
+      SDL2_ttf
+      SDL2_mixer
+      libappindicator-gtk2
+      libdbusmenu-gtk2
+      libindicator-gtk2
+      libcaca
+      libcanberra
+      libgcrypt
+      libvpx
+      librsvg
+      xorg.libXft
+      libvdpau
+      # ...
+      # Some more libraries that I needed to run programs
+      gnome2.pango
+      cairo
+      atk
+      gdk-pixbuf
+      fontconfig
+      freetype
+      dbus
+      alsaLib
+      expat
+      # Needed for electron
+      libdrm
+      mesa
+      libxkbcommon
+      # Needed to run, via virtualenv + pip, matplotlib & tikzplotlib
+      stdenv.cc.cc.lib # to provide libstdc++.so.6
+      pkgs.gcc-unwrapped.lib # maybe only the first one needed
+
+      # needed to run appimages
+      fuse # needed for musescore 4.2.1 appimage
+      e2fsprogs # needed for musescore 4.2.1 appimage
+    ];
+  };
+
   programs.adb.enable = false;
   programs.steam.enable = true;
   services.udev.extraRules = ''
@@ -286,8 +436,15 @@
   };
 
   # X11 et al #
+  #hardware.graphics.enable = true;
   hardware.opengl.enable = true;
-  hardware.opengl.driSupport = true;
+  hardware.opengl.extraPackages = [
+    pkgs.rocmPackages.clr.icd
+  ];
+  #hardware.amdgpu.opencl.enable = true;
+  #hardware.graphics.extraPackages = [
+  # pkgs.rocmPackages.clr.icd
+  #];
   services.xserver = {
     enable = true;
     xkb.layout = "us";
@@ -309,7 +466,7 @@
       greeters.gtk.clock-format = "%A %F %I:%M%p";
     };
     windowManager.cwm.enable = true;
-    desktopManager.wallpaper.mode = "center";
+    desktopManager.wallpaper.mode = "scale";
   };
   services.libinput = {
     enable = true;
@@ -336,7 +493,11 @@
     enable = true;
     logDriver = "journald";
     liveRestore = true;
-    package = pkgs.docker_25;
+    package = pkgs.docker_27;
+    daemon.settings = {
+      ipv6 = true;
+      "fixed-cidr-v6" = "2001:db8:1::/64";
+    };
   };
   virtualisation.docker.autoPrune = {
     enable = true;
@@ -351,7 +512,7 @@
   # system and users #
   environment.pathsToLink = [ "/share/zsh" ];
   # TODO:
-  # browsers should be set in home manager
+  # browsers should be set in home manager.
   environment.systemPackages = with pkgs; [
     bluez-tools
     clamav
@@ -363,7 +524,11 @@
     google-chrome
     libaacs
     libbluray
+    mons
     mpv-unwrapped # see overlays
+    nodejs
+    overskride
+    rocmPackages.clr
     sops
     # TODO:
     # move to home manager but good
