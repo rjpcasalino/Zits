@@ -21,6 +21,7 @@
     gopls
     grpcui
     lact
+    libreoffice
     makemkv
     microsoft-edge
     neofetch
