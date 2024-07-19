@@ -38,8 +38,10 @@
       fsType = "ext2";
     };
 
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/dd43790a-5215-4f4b-bf69-4baf15841cf8"; }];
+  # when I copied over using gparted to a new hd I did not include the swap
+  # comment out for now and remove later
+  #swapDevices =
+  #  [{ device = "/dev/disk/by-uuid/dd43790a-5215-4f4b-bf69-4baf15841cf8"; }];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
