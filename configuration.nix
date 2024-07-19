@@ -119,6 +119,7 @@
     ];
   };
   # Services #
+  services.dictd.enable = true;
   services.gnome.gnome-keyring.enable = true;
   # seahorse is a UI for keyring
   programs.seahorse.enable = true;
@@ -204,6 +205,8 @@
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
   # note: the hosts mode is to allow vpn split to work for mct
   environment.etc.hosts.mode = "0644";
+  # NEED WORDS
+
   # not sure this extraHosts stuff is working
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
@@ -222,11 +225,11 @@
   networking.firewall.allowedTCPPorts = [ 24800 ];
   # https://datatracker.ietf.org/doc/html/rfc6056
   networking.firewall.allowedUDPPortRanges = [
-  {
-    from = 1;
-    to = 65535;
-  }
-];
+    {
+      from = 1;
+      to = 65535;
+    }
+  ];
   # #
 
   # Misc programs #
@@ -511,6 +514,7 @@
 
   # system and users #
   environment.pathsToLink = [ "/share/zsh" ];
+  environment.wordlist.enable = true;
   # TODO:
   # browsers should be set in home manager.
   environment.systemPackages = with pkgs; [
