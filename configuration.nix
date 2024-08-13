@@ -8,7 +8,6 @@
   ## boot ##
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.grub.useOSProber = false;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "nct6775" "rtl8852bu" ];
   # [ pkgs.linuxPackages_latest.rtl8852bu ]
@@ -75,8 +74,7 @@
         pkgs.openssh
       ];
       script = ''
-        cp /home/rjpc/EXSSD/diary.merged ~ \
-        && scp /home/rjpc/EXSSD/diary.merged rjpc@nemo.home.arpa:~
+        scp /home/rjpc/diary.merged rjpc@nemo.home.arpa:~
       ''
       ;
       serviceConfig = {
@@ -192,10 +190,10 @@
     # we don't need to blacklist these bssid anymore
     # but good example of how to do so.
     # FIXME:
-    # pksRaw no longer works for WPA3?
+    # pskRaw no longer works for WPA3?
     networks = {
       "@ssid@" = {
-        psk = "@psk@";
+        pskRaw = "@psk@";
         extraConfig = ''
           bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
         '';
@@ -203,9 +201,8 @@
     };
   };
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
-  # note: the hosts mode is to allow vpn split to work for mct
-  environment.etc.hosts.mode = "0644";
-  # NEED WORDS
+  # note: the hosts mode is to allow vpn split to work for mct (no longer needed but will del later - July 2024)
+  # environment.etc.hosts.mode = "0644";
 
   # not sure this extraHosts stuff is working
   networking.extraHosts = ''
@@ -224,9 +221,10 @@
   # synergy is 24800
   networking.firewall.allowedTCPPorts = [ 24800 ];
   # https://datatracker.ietf.org/doc/html/rfc6056
+  # allows tftp
   networking.firewall.allowedUDPPortRanges = [
     {
-      from = 1;
+      from = 0;
       to = 65535;
     }
   ];
@@ -370,7 +368,7 @@
     ];
   };
 
-  programs.adb.enable = false;
+  programs.adb.enable = true;
   programs.steam.enable = true;
   services.udev.extraRules = ''
     # PS5 DualSense controller over USB hidraw
@@ -457,7 +455,6 @@
     displayManager.startx.enable = false;
     displayManager.lightdm = {
       enable = true;
-      #background = /. + "/home/rjpc/Pictures/nix-wallpaper-moonscape.png";
       greeters.gtk.indicators = [
         "~host"
         "~spacer"

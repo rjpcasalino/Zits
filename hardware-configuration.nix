@@ -32,12 +32,6 @@
       fsType = "ext4";
     };
 
-  fileSystems."/home/rjpc/EXSSD" =
-    {
-      device = "/dev/disk/by-uuid/79acb437-d581-47a1-ab06-8230b871bafd";
-      fsType = "ext2";
-    };
-
   # when I copied over using gparted to a new hd I did not include the swap
   # comment out for now and remove later
   #swapDevices =

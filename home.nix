@@ -23,13 +23,10 @@
     lact
     libreoffice
     makemkv
-    microsoft-edge
     neofetch
     nixpkgs-fmt
     nixpkgs-review
-    oneko
     opentofu
-    opera
     pamixer
     pciutils
     qemu
@@ -135,19 +132,6 @@
 
   programs.vim = {
     enable = true;
-    #plugins =  builtins.attrValues {
-    #  inherit (pkgs.vimPlugins)
-    #  colorizer
-    #  copilot-vim
-    #  csv-vim
-    #  csv
-    #  lightline-vim
-    #  matchit-zip
-    #  #vim-go
-    #  vim-nix
-    #  vim-terraform
-    #  vim-lsp;
-    #};
     plugins = with pkgs.vimPlugins; [
       colorizer
       copilot-vim
