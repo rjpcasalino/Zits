@@ -13,7 +13,7 @@
   # [ pkgs.linuxPackages_latest.rtl8852bu ]
   boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ];
   boot.extraModprobeConfig = '''';
-  boot.kernelParams = [ ];
+  boot.kernelParams = [];
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
   boot.loader.systemd-boot.consoleMode = "max";
@@ -56,11 +56,10 @@
   nix = {
     settings.trusted-users = [ "root" "rjpc" ];
     nixPath = [ "nixpkgs=flake:nixpkgs" ];
-    package = pkgs.nixVersions.latest;
     settings.auto-optimise-store = true;
     # auto-allocate-uids started throwing warnings with recent update to Uakari
     extraOptions = ''
-      experimental-features = nix-command flakes auto-allocate-uids configurable-impure-env
+      experimental-features = nix-command flakes auto-allocate-uids
     '';
     channel.enable = true;
     registry.nixpkgs.flake = inputs.nixpkgs;
@@ -184,7 +183,7 @@
   networking.wireless = {
     iwd.enable = true;
     enable = false; # iwd enabled
-    environmentFile = config.sops.secrets."wireless.env".path;
+    secretsFile = config.sops.secrets."wireless.env".path;
     userControlled.enable = true;
     scanOnLowSignal = false;
     # we don't need to blacklist these bssid anymore
@@ -192,8 +191,8 @@
     # FIXME:
     # pskRaw no longer works for WPA3?
     networks = {
-      "@ssid@" = {
-        pskRaw = "@psk@";
+      "ext:ssid" = {
+        pskRaw = "ext:psk";
         extraConfig = ''
           bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
         '';
@@ -211,7 +210,7 @@
   # networking.interfaces.wlp6s0.useDHCP = true; #
   # iwd renames interface to wlan0 #
   networking.interfaces = {
-    enp10s0.useDHCP = false;
+    enp10s0.useDHCP = true;
     wlan0.useDHCP = true;
   };
   # networking.nameservers = [ ];
@@ -438,8 +437,8 @@
 
   # X11 et al #
   #hardware.graphics.enable = true;
-  hardware.opengl.enable = true;
-  hardware.opengl.extraPackages = [
+  hardware.graphics.enable = true;
+  hardware.graphics.extraPackages = [
     pkgs.rocmPackages.clr.icd
   ];
   #hardware.amdgpu.opencl.enable = true;
@@ -466,6 +465,7 @@
       greeters.gtk.clock-format = "%A %F %I:%M%p";
     };
     windowManager.cwm.enable = true;
+    desktopManager.xfce.enable = true;
     desktopManager.wallpaper.mode = "scale";
   };
   services.libinput = {
@@ -543,6 +543,8 @@
         golang.go
         mechatroner.rainbow-csv
         ms-azuretools.vscode-docker
+        ms-toolsai.jupyter
+        ms-python.python
         ms-vscode.makefile-tools
         naumovs.color-highlight
       ];
