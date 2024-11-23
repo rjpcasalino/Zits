@@ -3,13 +3,14 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./face.nix
   ];
 
   ## boot ##
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-amd" "iwlwifi" "k10temp" "sg" "amdgpu" "nct6775" "rtl8852bu" ];
+  boot.kernelModules = [ "kvm-amd" "k10temp" "sg" "amdgpu" "nct6775" "rtl8852bu" ];
   # [ pkgs.linuxPackages_latest.rtl8852bu ]
   boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ];
   boot.extraModprobeConfig = '''';
@@ -193,6 +194,7 @@
     networks = {
       "ext:ssid" = {
         pskRaw = "ext:psk";
+        keyMgmt = "EXTERNAL_AUTH";
         extraConfig = ''
           bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
         '';
@@ -436,7 +438,6 @@
   };
 
   # X11 et al #
-  #hardware.graphics.enable = true;
   hardware.graphics.enable = true;
   hardware.graphics.extraPackages = [
     pkgs.rocmPackages.clr.icd
@@ -452,8 +453,9 @@
     xkb.options = "compose:ralt";
     exportConfiguration = true;
     displayManager.startx.enable = false;
+    displayManager.gdm.enable = true;
     displayManager.lightdm = {
-      enable = true;
+      enable = false;
       greeters.gtk.indicators = [
         "~host"
         "~spacer"
@@ -483,7 +485,7 @@
   xdg.menus.enable = true;
   xdg.portal = {
     enable = true;
-    configPackages = [ pkgs.gnome.gnome-session ];
+    configPackages = [ pkgs.gnome-session ];
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
   # #
@@ -565,6 +567,7 @@
       "wheel"
     ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
+    icon = /home/rjpc/.face ;
   };
   system.stateVersion = "22.11";
 }

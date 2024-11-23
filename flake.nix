@@ -3,19 +3,20 @@
 
   inputs = {
     nixpkgs = {
+      # unstable
       url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
-      #url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.0";
-      #url = "github:nixos/nixpkgs/nixos-unstable-small";
-      #url = "github:nixos/nixpkgs/nixos-24.05-small";
+      # stable
+      #url = "https://flakehub.com/f/NixOS/nixpkgs/*.tar.gz";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
     };
     determinate = {
-      url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1.145.tar.gz";
+      url = "https://flakehub.com/f/DeterminateSystems/determinate/0.1";
     };
   };
 
