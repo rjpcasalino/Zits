@@ -4,12 +4,12 @@
   inputs = {
     nixpkgs = {
       # unstable
-      url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
+      # url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
       # stable
-      #url = "https://flakehub.com/f/NixOS/nixpkgs/*.tar.gz";
+      url = "https://flakehub.com/f/NixOS/nixpkgs/*.tar.gz";
     };
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     sops-nix = {

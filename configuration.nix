@@ -3,21 +3,21 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./face.nix
+    ./face_redux.nix
   ];
 
   ## boot ##
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-amd" "k10temp" "sg" "amdgpu" "nct6775" "rtl8852bu" ];
-  # [ pkgs.linuxPackages_latest.rtl8852bu ]
-  boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ];
+  boot.kernelModules = [ "kvm-amd" "k10temp" "sg" "nct6775" ];
+  # boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ]; # broken as of 1/21/25
   boot.extraModprobeConfig = '''';
   boot.kernelParams = [];
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
   boot.loader.systemd-boot.consoleMode = "max";
+  boot.blacklistedKernelModules = [ "ucsi_ccg" ];
   # #
 
   # documentation #
@@ -117,7 +117,7 @@
     ];
   };
   # Services #
-  services.dictd.enable = true;
+  services.dictd.enable = false;
   services.gnome.gnome-keyring.enable = true;
   # seahorse is a UI for keyring
   programs.seahorse.enable = true;
@@ -128,10 +128,11 @@
   services.ollama = {
     enable = true;
     acceleration = "rocm";
-    #rocmOverrideGfx = "11.0.0"; # nixpkgs-unstable
+    rocmOverrideGfx = "11.0.0";
     environmentVariables = {
       OLLAMA_DEBUG = "1";
       HSA_OVERRIDE_GFX_VERSION = "11.0.0";
+      HCC_AMDGPU_TARGET = "gfx1100";
     };
   };
   # #
@@ -171,7 +172,11 @@
   fonts.enableGhostscriptFonts = true;
   fonts.packages = with pkgs; [
     emojione
-    nerdfonts
+    #nerd-fonts.hack
+    #nerd-fonts.noto
+    #nerd-fonts.symbols-only
+    #nerd-fonts.dejavu-sans-mono
+    nerdfonts # unstable moves this to the above
     noto-fonts
     openmoji-black
     openmoji-color
@@ -393,7 +398,7 @@
   # Enable SANE for scanning
   hardware.sane.enable = true;
   services.avahi.nssmdns4 = true;
-  # Needed since this is an HP scanner 
+  # Needed since this is an HP scanner
   # hardware.sane.extraBackends = [ pkgs.hplipWithPlugin ];
   # use below as above does not seem to scan but sees scanner
   # see: https://github.com/alexpevzner/sane-airscan
@@ -404,7 +409,6 @@
   # #
 
   # Audio and Sound #
-  hardware.pulseaudio.enable = false;
   services.pipewire = {
     enable = true;
     audio.enable = true;
@@ -439,13 +443,17 @@
 
   # X11 et al #
   hardware.graphics.enable = true;
+  # AMD GPU
+  hardware.amdgpu = {
+    amdvlk.enable = true;
+    amdvlk.supportExperimental.enable = true;
+    amdvlk.support32Bit.enable = true;
+  };
+  # #
+  hardware.amdgpu.opencl.enable = true;
   hardware.graphics.extraPackages = [
-    pkgs.rocmPackages.clr.icd
+   pkgs.rocmPackages.clr.icd
   ];
-  #hardware.amdgpu.opencl.enable = true;
-  #hardware.graphics.extraPackages = [
-  # pkgs.rocmPackages.clr.icd
-  #];
   services.xserver = {
     enable = true;
     xkb.layout = "us";
@@ -520,6 +528,7 @@
     bluez-tools
     clamav
     firefox
+    htop
     # replace with age?
     gnupg
     #
@@ -531,7 +540,6 @@
     mpv-unwrapped # see overlays
     nodejs
     overskride
-    rocmPackages.clr
     sops
     # TODO:
     # move to home manager but good

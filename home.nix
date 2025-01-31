@@ -17,6 +17,7 @@
     feh
     ffmpeg-full
     fortune
+    inputplug
     go
     gopls
     grpcui
@@ -34,7 +35,6 @@
     screen
     scrot
     slack
-    synergy
     unzip
     usbutils
     wget
