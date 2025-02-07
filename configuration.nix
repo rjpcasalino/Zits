@@ -539,6 +539,8 @@
     mons
     mpv-unwrapped # see overlays
     nodejs
+    nodePackages_latest.prettier
+    nodePackages_latest.eslint # might be doing this twice (in home.nix too)
     overskride
     sops
     # TODO:

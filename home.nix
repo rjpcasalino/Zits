@@ -13,6 +13,7 @@
     direnv
     du-dust
     ed
+    eslint
     fd
     feh
     ffmpeg-full
@@ -133,6 +134,7 @@
   programs.vim = {
     enable = true;
     plugins = with pkgs.vimPlugins; [
+      ale
       colorizer
       copilot-vim
       csv-vim
@@ -175,6 +177,10 @@
       let g:netrw_banner = 1
       let g:netrw_liststyle = 3
       let g:netrw_winsize = 25
+      let g:ale_sign_error = '✘'
+      let g:ale_sign_warning = '⚠'
+      highlight ALEErrorSign ctermbg=NONE ctermfg=red
+      highlight ALEWarningSign ctermbg=NONE ctermfg=yellow
       noremap <F11> :tabprevious<CR>
       noremap <F12> :tabnext<CR>
       augroup vimrc
