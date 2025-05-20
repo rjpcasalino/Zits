@@ -83,7 +83,7 @@
       "nd" = "nix develop";
       "zits" = "sudo nixos-rebuild switch --flake .#zits";
     };
-    initExtra = ''
+    initContent = ''
       export GIT_PS1_SHOWDIRTYSTATE=1
       export GIT_PS1_SHOWSTASHSTATE=1
       export GIT_PS1_SHOWCOLORHINTS=1
@@ -118,15 +118,6 @@
 
   programs.jq = {
     enable = true;
-    colors = {
-      arrays = "1;35";
-      false = "0;31";
-      null = "1;30";
-      numbers = "0;36";
-      objects = "1;37";
-      strings = "0;33";
-      true = "0;32";
-    };
   };
 
   programs.ripgrep.enable = true;

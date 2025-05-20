@@ -2,26 +2,24 @@
 
 stdenv.mkDerivation {
   pname = "rtl8852bu";
-  version = "${kernel.version}-unstable-2024-03-11";
+  version = "${kernel.version}-unstable-2024-05-25";
 
   src = fetchFromGitHub {
-    owner = "lwfinger";
-    repo = "rtl8852bu";
-    rev = "446ccb1a0e4b6445ae3978bb093500eb95f3bf2a";
-    hash = "sha256-0mkC39PZw/Te0kENxWJTWv+mmH2QpmUcuSLAXv0Dj9g=";
+    owner = "morrownr";
+    repo = "rtl8852bu-20240418";
+    rev = "e2c26e90f33a899d36e625d7c6506db46293a1a8";
+    hash = null;
   };
 
   nativeBuildInputs = [ bc nukeReferences ] ++ kernel.moduleBuildDependencies;
   hardeningDisable = [ "pic" "format" ];
 
-  prePatch = ''
+  postPatch = ''
     substituteInPlace ./Makefile \
-      --replace /lib/modules/ "${kernel.dev}/lib/modules/" \
-      --replace /sbin/depmod \# \
-      --replace '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/" \
-      --replace '/usr/lib/systemd/system-sleep' "$out/usr/lib/systemd/system-sleep"
+      --replace-fail /sbin/depmod \# \
+      --replace-fail '$(MODDESTDIR)' "$out/lib/modules/${kernel.modDirVersion}/kernel/net/wireless/"
     substituteInPlace ./platform/i386_pc.mk \
-      --replace /lib/modules "${kernel.dev}/lib/modules"
+      --replace-fail /lib/modules "${kernel.dev}/lib/modules"
   '';
 
   makeFlags = [
@@ -44,8 +42,8 @@ stdenv.mkDerivation {
   enableParallelBuilding = true;
 
   meta = with lib; {
-    description = "Driver for Realtek 802.11ax, rtl8852bu, provides the 8852bu mod";
-    homepage = "https://github.com/lwfinger/rtl8852bu";
+    description = "Driver for Realtek rtl8852au and rtl8832bu chipsets, provides the 8852au mod";
+    homepage = "https://github.com/morrownr/rtl8852bu";
     license = licenses.gpl2Only;
     platforms = platforms.linux;
     maintainers = with maintainers; [ lonyelon ];

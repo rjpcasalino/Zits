@@ -1,5 +1,6 @@
 { config, pkgs, inputs, ... }:
 
+
 {
   imports = [
     ./hardware-configuration.nix
@@ -10,10 +11,11 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
-  boot.kernelModules = [ "kvm-amd" "k10temp" "sg" "nct6775" ];
-  # boot.extraModulePackages = [ pkgs.linuxPackages_latest.rtl8852bu ]; # broken as of 1/21/25
-  boot.extraModprobeConfig = '''';
-  boot.kernelParams = [];
+  boot.kernelModules = [ "kvm-amd" "k10temp" "sg" "nct6775" "8852bu" ];
+  boot.extraModulePackages = [ ];
+  boot.extraModprobeConfig = ''
+  '';
+  boot.kernelParams = [ ];
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
   boot.loader.systemd-boot.consoleMode = "max";
@@ -101,7 +103,7 @@
       "002b36"
       "dc322f"
       "859900"
-      "b58900"
+      "000000"
       "268bd2"
       "d33682"
       "2aa198"
@@ -113,7 +115,24 @@
       "839496"
       "6c71c4"
       "93a1a1"
-      "fdf6e3"
+      "002b36"
+      #002b36: Navy Blue
+      #dc322f: Dark Red
+      #859900): Forest Green
+      #b58900: Olive Drab
+      #268bd2: Sky Blue
+      #d33682: Burnt Orange
+      #2aa198: Light Steel Blue
+      #eee8d5: Cream
+      #002b36: Navy Blue
+      #cb4b16: Brown
+      #586e75: Mint Green
+      #657b83: Forest Green (similar to #859900)
+      #839496: Dark Teal
+      #6c71c4: Medium Purple
+      #93a1a1: Light Silver
+      #fdf6e3: Beige
+
     ];
   };
   # Services #
@@ -128,9 +147,10 @@
   services.ollama = {
     enable = true;
     acceleration = "rocm";
-    rocmOverrideGfx = "11.0.0";
+    rocmOverrideGfx = "11.0.1";
     environmentVariables = {
       OLLAMA_DEBUG = "1";
+      OLLAMA_HOST = "0.0.0.0";
       HSA_OVERRIDE_GFX_VERSION = "11.0.0";
       HCC_AMDGPU_TARGET = "gfx1100";
     };
@@ -172,11 +192,11 @@
   fonts.enableGhostscriptFonts = true;
   fonts.packages = with pkgs; [
     emojione
-    #nerd-fonts.hack
-    #nerd-fonts.noto
-    #nerd-fonts.symbols-only
-    #nerd-fonts.dejavu-sans-mono
-    nerdfonts # unstable moves this to the above
+    nerd-fonts.hack
+    nerd-fonts.noto
+    nerd-fonts.symbols-only
+    nerd-fonts.dejavu-sans-mono
+    # nerdfonts # unstable moves this to the above
     noto-fonts
     openmoji-black
     openmoji-color
@@ -188,7 +208,7 @@
   networking.enableIPv6 = true;
   networking.wireless = {
     iwd.enable = true;
-    enable = false; # iwd enabled
+    enable = false;
     secretsFile = config.sops.secrets."wireless.env".path;
     userControlled.enable = true;
     scanOnLowSignal = false;
@@ -199,9 +219,8 @@
     networks = {
       "ext:ssid" = {
         pskRaw = "ext:psk";
-        keyMgmt = "EXTERNAL_AUTH";
+        #keyMgmt = "EXTERNAL_AUTH";
         extraConfig = ''
-          bssid_blacklist=80:cc:9c:f1:b8:7b 80:cc:9c:f1:82:03
         '';
       };
     };
@@ -213,6 +232,7 @@
   # not sure this extraHosts stuff is working
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
+    0.0.0.0 www.asusrouter.com
   '';
   # networking.interfaces.wlp6s0.useDHCP = true; #
   # iwd renames interface to wlan0 #
@@ -225,7 +245,7 @@
   # Firewall
   networking.firewall.enable = true;
   # synergy is 24800
-  networking.firewall.allowedTCPPorts = [ 24800 ];
+  networking.firewall.allowedTCPPorts = [ ];
   # https://datatracker.ietf.org/doc/html/rfc6056
   # allows tftp
   networking.firewall.allowedUDPPortRanges = [
@@ -236,144 +256,8 @@
   ];
   # #
 
-  # Misc programs #
-  # Automatically creates a loader in /lib/* to avoid patching stuff
-  # To disable it temporarily use
-  # unset NIX_LD
-  programs.nix-ld = {
-    enable = false;
-    libraries = with pkgs; [
-      # List by default
-      zlib
-      zstd
-      stdenv.cc.cc
-      curl
-      openssl
-      attr
-      libssh
-      bzip2
-      libxml2
-      acl
-      libsodium
-      util-linux
-      xz
-      systemd
-
-      # My own additions
-      xorg.libXcomposite
-      xorg.libXtst
-      xorg.libXrandr
-      xorg.libXext
-      xorg.libX11
-      xorg.libXfixes
-      libGL
-      libva
-      pipewire
-      xorg.libxcb
-      xorg.libXdamage
-      xorg.libxshmfence
-      xorg.libXxf86vm
-      libelf
-
-      # Required
-      glib
-      gtk2
-
-      # Without these it silently fails
-      xorg.libXinerama
-      xorg.libXcursor
-      xorg.libXrender
-      xorg.libXScrnSaver
-      xorg.libXi
-      xorg.libSM
-      xorg.libICE
-      gnome2.GConf
-      nspr
-      nss
-      cups
-      libcap
-      SDL2
-      libusb1
-      dbus-glib
-      ffmpeg
-      # Only libraries are needed from those two
-      libudev0-shim
-
-      # needed to run unity
-      gtk3
-      icu
-      libnotify
-      gsettings-desktop-schemas
-      # https://github.com/NixOS/nixpkgs/issues/72282
-      # https://github.com/NixOS/nixpkgs/blob/2e87260fafdd3d18aa1719246fd704b35e55b0f2/pkgs/applications/misc/joplin-desktop/default.nix#L16
-      # log in /home/leo/.config/unity3d/Editor.log
-      # it will segfault when opening files if you don’t do:
-      # export XDG_DATA_DIRS=/nix/store/0nfsywbk0qml4faa7sk3sdfmbd85b7ra-gsettings-desktop-schemas-43.0/share/gsettings-schemas/gsettings-desktop-schemas-43.0:/nix/store/rkscn1raa3x850zq7jp9q3j5ghcf6zi2-gtk+3-3.24.35/share/gsettings-schemas/gtk+3-3.24.35/:$XDG_DATA_DIRS
-      # other issue: (Unity:377230): GLib-GIO-CRITICAL **: 21:09:04.706: g_dbus_proxy_call_sync_internal: assertion 'G_IS_DBUS_PROXY (proxy)' failed
-
-      # Verified games requirements
-      xorg.libXt
-      xorg.libXmu
-      libogg
-      libvorbis
-      SDL
-      SDL2_image
-      glew110
-      libidn
-      tbb
-
-      # Other things from runtime
-      flac
-      freeglut
-      libjpeg
-      libpng
-      libpng12
-      libsamplerate
-      libmikmod
-      libtheora
-      libtiff
-      pixman
-      speex
-      SDL_image
-      SDL_ttf
-      SDL_mixer
-      SDL2_ttf
-      SDL2_mixer
-      libappindicator-gtk2
-      libdbusmenu-gtk2
-      libindicator-gtk2
-      libcaca
-      libcanberra
-      libgcrypt
-      libvpx
-      librsvg
-      xorg.libXft
-      libvdpau
-      # ...
-      # Some more libraries that I needed to run programs
-      gnome2.pango
-      cairo
-      atk
-      gdk-pixbuf
-      fontconfig
-      freetype
-      dbus
-      alsaLib
-      expat
-      # Needed for electron
-      libdrm
-      mesa
-      libxkbcommon
-      # Needed to run, via virtualenv + pip, matplotlib & tikzplotlib
-      stdenv.cc.cc.lib # to provide libstdc++.so.6
-      pkgs.gcc-unwrapped.lib # maybe only the first one needed
-
-      # needed to run appimages
-      fuse # needed for musescore 4.2.1 appimage
-      e2fsprogs # needed for musescore 4.2.1 appimage
-    ];
-  };
-
+  # Programs misc
+  services.flatpak.enable = true;
   programs.adb.enable = true;
   programs.steam.enable = true;
   services.udev.extraRules = ''
