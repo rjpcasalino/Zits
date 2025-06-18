@@ -208,6 +208,10 @@
   networking.enableIPv6 = true;
   networking.wireless = {
     iwd.enable = true;
+    iwd.settings = {
+      Rank.BandModifier5GHz=1;
+      Rank.BandModifier2_4GHz=0;
+    };
     enable = false;
     secretsFile = config.sops.secrets."wireless.env".path;
     userControlled.enable = true;

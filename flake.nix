@@ -17,7 +17,7 @@
       url = "github:Mic92/sops-nix";
     };
     determinate = {
-      url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+      url = "https://api.flakehub.com/f/DeterminateSystems/determinate/*";
     };
   };
 
