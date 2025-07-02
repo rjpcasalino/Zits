@@ -209,8 +209,9 @@
   networking.wireless = {
     iwd.enable = true;
     iwd.settings = {
-      Rank.BandModifier5GHz=1;
-      Rank.BandModifier2_4GHz=0;
+      Rank.BandModifier6GHz=2.0;
+      Rank.BandModifier5GHz=1.5;
+      Rank.BandModifier2_4GHz=1.0;
     };
     enable = false;
     secretsFile = config.sops.secrets."wireless.env".path;
@@ -391,7 +392,7 @@
     enable = true;
     logDriver = "journald";
     liveRestore = true;
-    package = pkgs.docker_27;
+    # package = pkgs.docker_27; # if you want a version other than latest?
     daemon.settings = {
       ipv6 = true;
       "fixed-cidr-v6" = "2001:db8:1::/64";
