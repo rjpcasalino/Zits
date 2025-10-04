@@ -3,16 +3,15 @@
 
   inputs = {
     nixpkgs = {
-      # unstable
-      url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
-      # stable
-      # url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+      # https://flakehub.com/flake/NixOS/nixpkgs?view=usage
+      # url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
+      url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0";
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
     };
     determinate = {
-      url = "https://api.flakehub.com/f/DeterminateSystems/determinate/*";
+      url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     };
   };
 
