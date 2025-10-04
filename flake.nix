@@ -6,12 +6,7 @@
       # unstable
       url = "https://flakehub.com/f/NixOS/nixpkgs/0.1.0.tar.gz";
       # stable
-      # url = "https://flakehub.com/f/NixOS/nixpkgs/*.tar.gz";
-    };
-    home-manager = {
-      #url = "github:nix-community/home-manager/release-24.11";
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
@@ -21,7 +16,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, determinate, home-manager, sops-nix, ... }@inputs: {
+  outputs = { self, nixpkgs, determinate, sops-nix, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -29,12 +24,6 @@
       modules = with self.nixosModules; [
         ./configuration.nix
         sops-nix.nixosModules.sops
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.users.rjpc = import ./home.nix;
-        }
         determinate.nixosModules.default
       ];
     };

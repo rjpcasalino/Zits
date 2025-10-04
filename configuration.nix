@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, inputs, lib, ... }:
 
 
 {
@@ -64,8 +64,9 @@
     extraOptions = ''
       experimental-features = nix-command flakes auto-allocate-uids
     '';
-    channel.enable = true;
+    channel.enable = false;
     registry.nixpkgs.flake = inputs.nixpkgs;
+    settings.show-trace = true;
   };
   # #
 
@@ -140,6 +141,8 @@
   services.gnome.gnome-keyring.enable = true;
   # seahorse is a UI for keyring
   programs.seahorse.enable = true;
+  # git
+  programs.git.enable = true;
   # General Purpose Mouse daemon—enables mouse support in virtual consoles
   services.gpm.enable = true;
   services.kmscon.enable = false;
@@ -209,9 +212,9 @@
   networking.wireless = {
     iwd.enable = true;
     iwd.settings = {
-      Rank.BandModifier6GHz=2.0;
-      Rank.BandModifier5GHz=1.5;
-      Rank.BandModifier2_4GHz=1.0;
+      Rank.BandModifier6GHz = 2.0;
+      Rank.BandModifier5GHz = 1.5;
+      Rank.BandModifier2_4GHz = 1.0;
     };
     enable = false;
     secretsFile = config.sops.secrets."wireless.env".path;
@@ -245,7 +248,7 @@
     enp10s0.useDHCP = true;
     wlan0.useDHCP = true;
   };
-  # networking.nameservers = [ ];
+  networking.nameservers = [ "192.168.12.148" "192.168.12.1" "1.1.1.1" ];
 
   # Firewall
   networking.firewall.enable = true;
@@ -262,6 +265,52 @@
   # #
 
   # Programs misc
+  programs.zsh = {
+    enable = true;
+    autosuggestions.enable = true;
+    histSize = 10000;
+    histFile = "$HOME/.zsh_history";
+    setOptions = [
+      "HIST_IGNORE_ALL_DUPS"
+    ];
+    shellAliases = {
+      ".." = "cd ..";
+      "..." = "cd ../..";
+      "dc" = "docker compose";
+      "ddie" = "docker system prune -a --volumes";
+      "de" = "docker exec -it";
+      "dnin" = "docker network inspect";
+      "dnls" = "docker network ls";
+      "dps" = "docker ps";
+      "fd" = "fd -c never"; # never use color output on fd
+      "g" = "git";
+      "ll" = "ls -l";
+      "ls" = "ls --color=auto";
+      "nd" = "nix develop";
+      "zits" = "sudo nixos-rebuild switch --flake .#zits";
+    };
+    promptInit = ''
+      export GIT_PS1_SHOWDIRTYSTATE=1
+      export GIT_PS1_SHOWSTASHSTATE=1
+      export GIT_PS1_SHOWCOLORHINTS=1
+      export GIT_PS1_SHOWUPSTREAM="auto"
+      setopt PROMPT_SUBST
+      autoload -U colors && colors
+      source $HOME/.git-prompt.sh
+      eval "$(direnv hook zsh)"
+      bindkey -e
+      if [[ "$SSH_TTY" ]]; then
+        export PS1='%F{#C600E8}SSH on %m%f %F{magenta}%n%f %B%F{red}%~%f $(__git_ps1 "(%s) ")%b%# '
+      else
+        export PS1='%F{magenta}%n%f %B%F{blue}%~%f $(__git_ps1 "(%s) ")%b%# '
+      fi;
+    '';
+  };
+  programs.vim = {
+    enable = true;
+    defaultEditor = true;
+  };
+
   services.flatpak.enable = true;
   programs.adb.enable = true;
   programs.steam.enable = true;
@@ -332,16 +381,10 @@
 
   # X11 et al #
   hardware.graphics.enable = true;
-  # AMD GPU
-  hardware.amdgpu = {
-    amdvlk.enable = true;
-    amdvlk.supportExperimental.enable = true;
-    amdvlk.support32Bit.enable = true;
-  };
-  # #
   hardware.amdgpu.opencl.enable = true;
   hardware.graphics.extraPackages = [
-   pkgs.rocmPackages.clr.icd
+    pkgs.rocmPackages.clr.icd
+    pkgs.rocmPackages.hipblaslt
   ];
   services.xserver = {
     enable = true;
@@ -350,7 +393,6 @@
     xkb.options = "compose:ralt";
     exportConfiguration = true;
     displayManager.startx.enable = false;
-    displayManager.gdm.enable = true;
     displayManager.lightdm = {
       enable = false;
       greeters.gtk.indicators = [
@@ -367,6 +409,7 @@
     desktopManager.xfce.enable = true;
     desktopManager.wallpaper.mode = "scale";
   };
+  services.displayManager.gdm.enable = true;
   services.libinput = {
     enable = true;
     mouse = {
@@ -405,7 +448,6 @@
   virtualisation.podman.enable = false;
   virtualisation.libvirtd.enable = false;
   virtualisation.virtualbox.host.enable = false;
-  virtualisation.lxd.enable = false;
   # #
 
   # system and users #
@@ -431,6 +473,7 @@
     nodePackages_latest.prettier
     nodePackages_latest.eslint # might be doing this twice (in home.nix too)
     overskride
+    polybar
     sops
     # TODO:
     # move to home manager but good
@@ -450,6 +493,58 @@
         naumovs.color-highlight
       ];
     })
+    ## HOME MANAGER OG
+    age
+    arandr
+    awscli2
+    bc
+    curl
+    deploy-rs
+    direnv
+    du-dust
+    ed
+    eslint
+    fd
+    feh
+    ffmpeg-full
+    fortune
+    inputplug
+    go
+    gopls
+    grpcui
+    lact
+    libreoffice
+    makemkv
+    neofetch
+    nixpkgs-fmt
+    nixpkgs-review
+    opentofu
+    pamixer
+    pciutils
+    qemu
+    rpi-imager
+    ripgrep
+    screen
+    scrot
+    slack
+    unzip
+    usbutils
+    wget
+    xdg-utils
+    xorg.libXft
+    xorg.xev
+    xorg.xmodmap
+    xscreensaver
+    zathura
+    zoom-us
+    ##
+    wine
+    (pkgs.lutris.override {
+      extraPkgs = pkgs: [
+        pkgs.wineWowPackages.stagingFull
+        pkgs.winetricks
+      ];
+    })
   ];
   users.users.rjpc = {
     isNormalUser = true;
@@ -466,7 +561,7 @@
       "wheel"
     ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
-    icon = /home/rjpc/.face ;
+    icon = /home/rjpc/.face;
   };
   system.stateVersion = "22.11";
 }
