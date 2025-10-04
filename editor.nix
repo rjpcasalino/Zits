@@ -5,7 +5,6 @@
     defaultEditor = true;
     package = (pkgs.vim-full.override { }).customize {
       name = "vim";
-      # Install plugins for example for syntax highlighting of nix files
       vimrcConfig.packages.myplugins = with pkgs.vimPlugins; {
         start = [
           ale
@@ -19,6 +18,7 @@
           vim-nix
           vim-terraform
           vim-lsp
+          vim-lastplace
         ];
         opt = [ ];
       };

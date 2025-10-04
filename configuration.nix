@@ -450,50 +450,11 @@
   # system and users #
   environment.pathsToLink = [ "/share/zsh" ];
   environment.wordlist.enable = true;
-  # TODO:
-  # browsers should be set in home manager.
   environment.systemPackages = with pkgs; [
-    bluez-tools
-    clamav
-    firefox
-    htop
-    # replace with age?
-    gnupg
-    #
-    gnumake
-    google-chrome
-    libaacs
-    libbluray
-    mons
-    mpv-unwrapped # see overlays
-    nodejs
-    nodePackages_latest.prettier
-    nodePackages_latest.eslint # might be doing this twice (in home.nix too)
-    overskride
-    polybar
-    sops
-    # TODO:
-    # move to home manager but good
-    # example of non-home manager setup
-    (vscode-with-extensions.override {
-      vscodeExtensions = with vscode-extensions; [
-        bbenoist.nix
-        dracula-theme.theme-dracula
-        eamodio.gitlens
-        enkia.tokyo-night
-        golang.go
-        mechatroner.rainbow-csv
-        ms-azuretools.vscode-docker
-        ms-toolsai.jupyter
-        ms-python.python
-        ms-vscode.makefile-tools
-        naumovs.color-highlight
-      ];
-    })
-    ## HOME MANAGER OG
     age
     arandr
     awscli2
+    bluez-tools
     bc
     curl
     deploy-rs
@@ -515,10 +476,8 @@
     neofetch
     nixpkgs-fmt
     nixpkgs-review
-    opentofu
     pamixer
     pciutils
-    qemu
     rpi-imager
     ripgrep
     screen
@@ -534,7 +493,37 @@
     xscreensaver
     zathura
     zoom-us
-    ##
+    clamav
+    firefox
+    htop
+    gnupg
+    gnumake
+    google-chrome
+    libaacs
+    libbluray
+    mons
+    mpv-unwrapped # see overlays
+    nodejs
+    nodePackages_latest.prettier
+    nodePackages_latest.eslint # might be doing this twice (in home.nix too)
+    overskride
+    polybar
+    sops
+    (vscode-with-extensions.override {
+      vscodeExtensions = with vscode-extensions; [
+        bbenoist.nix
+        dracula-theme.theme-dracula
+        eamodio.gitlens
+        enkia.tokyo-night
+        golang.go
+        mechatroner.rainbow-csv
+        ms-azuretools.vscode-docker
+        ms-toolsai.jupyter
+        ms-python.python
+        ms-vscode.makefile-tools
+        naumovs.color-highlight
+      ];
+    })
     wine
     (pkgs.lutris.override {
       extraPkgs = pkgs: [
