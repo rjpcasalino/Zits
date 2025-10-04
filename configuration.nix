@@ -5,6 +5,7 @@
   imports = [
     ./hardware-configuration.nix
     ./face_redux.nix
+    ./editor.nix
   ];
 
   ## boot ##
@@ -305,10 +306,6 @@
         export PS1='%F{magenta}%n%f %B%F{blue}%~%f $(__git_ps1 "(%s) ")%b%# '
       fi;
     '';
-  };
-  programs.vim = {
-    enable = true;
-    defaultEditor = true;
   };
 
   services.flatpak.enable = true;
