@@ -28,7 +28,8 @@ in
       type = attrsOf (submodule userOptions);
     };
   };
-
+  #FIXME:
+  # this will fail if you go back to stable since it's "xserver.displayManager" there
   config = lib.mkIf config.services.displayManager.gdm.enable {
     boot.postBootCommands = strings.concatStrings bootCommands;
   };
