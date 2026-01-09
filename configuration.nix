@@ -150,7 +150,7 @@
   # ollama
   services.ollama = {
     enable = true;
-    acceleration = "rocm";
+    package = pkgs.ollama-rocm;
     rocmOverrideGfx = "11.0.1";
     environmentVariables = {
       OLLAMA_DEBUG = "1";
@@ -195,7 +195,6 @@
   fonts.enableDefaultPackages = true;
   fonts.enableGhostscriptFonts = true;
   fonts.packages = with pkgs; [
-    emojione
     nerd-fonts.hack
     nerd-fonts.noto
     nerd-fonts.symbols-only
@@ -248,8 +247,8 @@
   networking.interfaces = {
     enp10s0.useDHCP = true;
     wlan0.useDHCP = true;
+    wlan1.useDHCP = true;
   };
-  networking.nameservers = [ "192.168.12.148" "192.168.12.1" "1.1.1.1" ];
 
   # Firewall
   networking.firewall.enable = true;
@@ -309,7 +308,6 @@
   };
 
   services.flatpak.enable = true;
-  programs.adb.enable = true;
   programs.steam.enable = true;
   services.udev.extraRules = ''
     # PS5 DualSense controller over USB hidraw
@@ -349,7 +347,7 @@
     audio.enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
-    jack.enable = true;
+    jack.enable = false;
     wireplumber.enable = true;
     pulse.enable = true;
   };
@@ -453,13 +451,14 @@
   environment.systemPackages = with pkgs; [
     age
     arandr
-    awscli2
+    #awscli2
     bluez-tools
     bc
     curl
+    cmake
     deploy-rs
     direnv
-    du-dust
+    dust
     ed
     eslint
     fd
@@ -478,7 +477,7 @@
     nixpkgs-review
     pamixer
     pciutils
-    rpi-imager
+    # rpi-imager # fucking broken and no time to fix.
     ripgrep
     screen
     scrot
@@ -508,6 +507,7 @@
     nodePackages_latest.eslint # might be doing this twice (in home.nix too)
     overskride
     polybar
+    p11-kit
     sops
     (vscode-with-extensions.override {
       vscodeExtensions = with vscode-extensions; [
@@ -535,7 +535,6 @@
   users.users.rjpc = {
     isNormalUser = true;
     extraGroups = [
-      "adbusers"
       "audio"
       "cdrom"
       "dialout"
