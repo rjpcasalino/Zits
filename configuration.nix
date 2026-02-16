@@ -207,6 +207,9 @@
   # #
 
   # Networking #
+  systemd.network.enable = true;
+  networking.interfaces.enp13s0f2u1u1.useDHCP = true;
+  networking.interfaces.wlan0.useDHCP = true;
   networking.hostName = "zits";
   networking.enableIPv6 = true;
   networking.wireless = {
@@ -244,11 +247,6 @@
   '';
   # networking.interfaces.wlp6s0.useDHCP = true; #
   # iwd renames interface to wlan0 #
-  networking.interfaces = {
-    enp10s0.useDHCP = true;
-    wlan0.useDHCP = true;
-    wlan1.useDHCP = true;
-  };
 
   # Firewall
   networking.firewall.enable = true;
@@ -350,6 +348,13 @@
     jack.enable = false;
     wireplumber.enable = true;
     pulse.enable = true;
+    extraConfig.pipewire = {
+     "99-disable-bell" = {
+       "context.properties"= {
+            "module.x11.bell" = false;
+       };
+     };
+    };
   };
   # #
 
