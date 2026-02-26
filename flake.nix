@@ -13,11 +13,10 @@
     };
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, determinate, sops-nix, ... }@inputs: {
+  outputs = { self, nixpkgs, sops-nix, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -25,7 +24,7 @@
       modules = with self.nixosModules; [
         ./configuration.nix
         sops-nix.nixosModules.sops
-        determinate.nixosModules.default
+        # determinate.nixosModules.default
       ];
     };
   };

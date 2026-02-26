@@ -4,8 +4,8 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./face_redux.nix
     ./editor.nix
+    ./shell.nix
   ];
 
   ## boot ##
@@ -92,49 +92,31 @@
   # TIME ZONE
   time.timeZone = "America/Los_Angeles";
   # #
-
   # Linux console #
   console = {
     earlySetup = true;
     font = "${pkgs.terminus_font}/share/consolefonts/ter-v16n.psf.gz";
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
-    colors = [
-      # TODO:
-      # map these colors with comments
-      "002b36"
-      "dc322f"
-      "859900"
-      "000000"
-      "268bd2"
-      "d33682"
-      "2aa198"
-      "eee8d5"
-      "002b36"
-      "cb4b16"
-      "586e75"
-      "657b83"
-      "839496"
-      "6c71c4"
-      "93a1a1"
-      "002b36"
-      #002b36: Navy Blue
-      #dc322f: Dark Red
-      #859900): Forest Green
-      #b58900: Olive Drab
-      #268bd2: Sky Blue
-      #d33682: Burnt Orange
-      #2aa198: Light Steel Blue
-      #eee8d5: Cream
-      #002b36: Navy Blue
-      #cb4b16: Brown
-      #586e75: Mint Green
-      #657b83: Forest Green (similar to #859900)
-      #839496: Dark Teal
-      #6c71c4: Medium Purple
-      #93a1a1: Light Silver
-      #fdf6e3: Beige
 
+    # THE CYBERDECK BASE PALETTE
+    colors = [
+      "1e2030" # Color 0:  Black
+      "e82424" # Color 1:  Red
+      "2dcc70" # Color 2:  Green
+      "e5c07b" # Color 3:  Yellow (Amber)
+      "26bbd9" # Color 4:  Blue
+      "c678dd" # Color 5:  Magenta
+      "56b6c2" # Color 6:  Cyan
+      "828bb8" # Color 7:  White (Light Gray)
+      "444a73" # Color 8:  Bright Black (Used for muted UI elements)
+      "ff3333" # Color 9:  Bright Red (Errors)
+      "33ff00" # Color 10: Bright Green (Phosphor success / user)
+      "ffcc00" # Color 11: Bright Yellow (Git status warning)
+      "0066ff" # Color 12: Bright Blue (Nix shell)
+      "ff00ff" # Color 13: Bright Magenta (Git branch)
+      "00ffff" # Color 14: Bright Cyan (Directory)
+      "ffffff" # Color 15: Bright White
     ];
   };
   # Services #
@@ -194,20 +176,11 @@
   # Fonts #
   fonts.enableDefaultPackages = true;
   fonts.enableGhostscriptFonts = true;
-  fonts.packages = with pkgs; [
-    nerd-fonts.hack
-    nerd-fonts.noto
-    nerd-fonts.symbols-only
-    nerd-fonts.dejavu-sans-mono
-    # nerdfonts # unstable moves this to the above
-    noto-fonts
-    openmoji-black
-    openmoji-color
-  ];
   # #
 
   # Networking #
   systemd.network.enable = true;
+  systemd.network.wait-online.anyInterface = true;
   networking.interfaces.enp13s0f2u1u1.useDHCP = true;
   networking.interfaces.wlan0.useDHCP = true;
   networking.hostName = "zits";
@@ -245,8 +218,6 @@
     172.17.0.1 host.docker.internal
     0.0.0.0 www.asusrouter.com
   '';
-  # networking.interfaces.wlp6s0.useDHCP = true; #
-  # iwd renames interface to wlan0 #
 
   # Firewall
   networking.firewall.enable = true;
@@ -263,47 +234,47 @@
   # #
 
   # Programs misc
-  programs.zsh = {
-    enable = true;
-    autosuggestions.enable = true;
-    histSize = 10000;
-    histFile = "$HOME/.zsh_history";
-    setOptions = [
-      "HIST_IGNORE_ALL_DUPS"
-    ];
-    shellAliases = {
-      ".." = "cd ..";
-      "..." = "cd ../..";
-      "dc" = "docker compose";
-      "ddie" = "docker system prune -a --volumes";
-      "de" = "docker exec -it";
-      "dnin" = "docker network inspect";
-      "dnls" = "docker network ls";
-      "dps" = "docker ps";
-      "fd" = "fd -c never"; # never use color output on fd
-      "g" = "git";
-      "ll" = "ls -l";
-      "ls" = "ls --color=auto";
-      "nd" = "nix develop";
-      "zits" = "sudo nixos-rebuild switch --flake .#zits";
-    };
-    promptInit = ''
-      export GIT_PS1_SHOWDIRTYSTATE=1
-      export GIT_PS1_SHOWSTASHSTATE=1
-      export GIT_PS1_SHOWCOLORHINTS=1
-      export GIT_PS1_SHOWUPSTREAM="auto"
-      setopt PROMPT_SUBST
-      autoload -U colors && colors
-      source $HOME/.git-prompt.sh
-      eval "$(direnv hook zsh)"
-      bindkey -e
-      if [[ "$SSH_TTY" ]]; then
-        export PS1='%F{#C600E8}SSH on %m%f %F{magenta}%n%f %B%F{red}%~%f $(__git_ps1 "(%s) ")%b%# '
-      else
-        export PS1='%F{magenta}%n%f %B%F{blue}%~%f $(__git_ps1 "(%s) ")%b%# '
-      fi;
-    '';
-  };
+  #programs.zsh = {
+  #  enable = true;
+  #  autosuggestions.enable = true;
+  #  histSize = 10000;
+  #  histFile = "$HOME/.zsh_history";
+  #  setOptions = [
+  #    "HIST_IGNORE_ALL_DUPS"
+  #  ];
+  #  shellAliases = {
+  #    ".." = "cd ..";
+  #    "..." = "cd ../..";
+  #    "dc" = "docker compose";
+  #    "ddie" = "docker system prune -a --volumes";
+  #    "de" = "docker exec -it";
+  #    "dnin" = "docker network inspect";
+  #    "dnls" = "docker network ls";
+  #    "dps" = "docker ps";
+  #    "fd" = "fd -c never"; # never use color output on fd
+  #    "g" = "git";
+  #    "ll" = "ls -l";
+  #    "ls" = "ls --color=auto";
+  #    "nd" = "nix develop";
+  #    "zits" = "sudo nixos-rebuild switch --flake .#zits";
+  #  };
+  #  promptInit = ''
+  #    export GIT_PS1_SHOWDIRTYSTATE=1
+  #    export GIT_PS1_SHOWSTASHSTATE=1
+  #    export GIT_PS1_SHOWCOLORHINTS=1
+  #    export GIT_PS1_SHOWUPSTREAM="auto"
+  #    setopt PROMPT_SUBST
+  #    autoload -U colors && colors
+  #    source $HOME/.git-prompt.sh
+  #    eval "$(direnv hook zsh)"
+  #    bindkey -e
+  #    if [[ "$SSH_TTY" ]]; then
+  #      export PS1='%F{#C600E8}SSH on %m%f %F{magenta}%n%f %B%F{red}%~%f $(__git_ps1 "(%s) ")%b%# '
+  #    else
+  #      export PS1='%F{magenta}%n%f %B%F{blue}%~%f $(__git_ps1 "(%s) ")%b%# '
+  #    fi;
+  #  '';
+  #};
 
   services.flatpak.enable = true;
   programs.steam.enable = true;
@@ -336,7 +307,7 @@
   hardware.sane.extraBackends = [ pkgs.sane-airscan ];
   # for a WiFi printer
   services.avahi.openFirewall = true;
-  services.printing.drivers = [ pkgs.hplip ];
+  services.printing.drivers = [ pkgs.hplip pkgs.brlaser pkgs.brgenml1lpr pkgs.brgenml1cupswrapper ];
   # #
 
   # Audio and Sound #
@@ -349,11 +320,11 @@
     wireplumber.enable = true;
     pulse.enable = true;
     extraConfig.pipewire = {
-     "99-disable-bell" = {
-       "context.properties"= {
-            "module.x11.bell" = false;
-       };
-     };
+      "99-disable-bell" = {
+        "context.properties" = {
+          "module.x11.bell" = false;
+        };
+      };
     };
   };
   # #
@@ -476,7 +447,7 @@
     grpcui
     lact
     libreoffice
-    makemkv
+    # makemkv # FUCK
     neofetch
     nixpkgs-fmt
     nixpkgs-review
@@ -503,6 +474,7 @@
     gnupg
     gnumake
     google-chrome
+    gemini-cli
     libaacs
     libbluray
     mons
@@ -529,13 +501,13 @@
         naumovs.color-highlight
       ];
     })
-    wine
-    (pkgs.lutris.override {
-      extraPkgs = pkgs: [
-        pkgs.wineWowPackages.stagingFull
-        pkgs.winetricks
-      ];
-    })
+    # wine
+    #(pkgs.lutris.override {
+    #  extraPkgs = pkgs: [
+    #    pkgs.wineWow64Packages.stagingFull
+    #    pkgs.winetricks
+    #  ];
+    # })
   ];
   users.users.rjpc = {
     isNormalUser = true;
@@ -551,7 +523,6 @@
       "wheel"
     ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
-    icon = /home/rjpc/.face;
   };
   system.stateVersion = "22.11";
 }
