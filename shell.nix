@@ -44,66 +44,65 @@
       # Fix Ctrl+Left and Ctrl+Right for jumping between words
       bindkey '^[[1;5D' backward-word
       bindkey '^[[1;5C' forward-word
+      # Human mode back on, Ryan here. trying to get del key to work
+      bindkey '^[[3~' delete-char
     '';
   };
 
   # -----------------------------------------------------------
-  # THE CYBERDECK PROMPT (1980s Vibe / 2026 Tech)
+  # MIDNIGHT 2026 PROMPT (Cool Soft Black / Muted Pastels)
   # -----------------------------------------------------------
   programs.starship = {
     enable = true;
     settings = {
       add_newline = true;
 
-      # The Layout: 
-      # [14:05:22] [rjpcasalino@host] // DIR: ~/code // GIT: main [!+?] // NIX: shell
-      # >_ 
       format = ''
         $time$username$hostname$directory$git_branch$git_status$nix_shell$cmd_duration
         $character
       '';
 
-      # System Clock (Retro log file vibe)
+      # System Clock (Muted slate - visually recedes)
       time = {
         disabled = false;
         time_format = "%H:%M:%S";
-        style = "bold bright-black";
+        style = "bold #68687a";
         format = "[\\[$time\\]]($style) ";
       };
 
-      # Phosphor Green User & Host
+      # Muted Mint User & Host
       username = {
         show_always = true;
-        style_user = "bold bright-green";
-        style_root = "bold bright-red";
+        style_user = "bold #8abf9c";
+        style_root = "bold #d97c8a"; # Muted rose for root
         format = "[\\[$user]($style)";
       };
 
       hostname = {
-        ssh_only = false; # Always show for that mainframe feel
-        style = "bold bright-green";
+        ssh_only = false;
+        style = "bold #8abf9c";
         format = "[@$hostname\\]]($style) ";
       };
 
-      # Cyan Directory with Retro Label
+      # Soft Cyan Directory
       directory = {
-        style = "bold bright-cyan";
-        format = "[// DIR: $path ]($style)";
+        style = "bold #78b5ba";
+        format = "[\\[ $path \\]]($style) ";
         truncation_length = 4;
         truncate_to_repo = false;
       };
 
-      # Magenta Git Status (No Emojis)
+      # Dusty Lavender Git Branch
       git_branch = {
-        style = "bold bright-magenta";
-        symbol = ""; # Ditch the modern git icon
-        format = "[// GIT: $branch ]($style)";
+        style = "bold #b893ce";
+        symbol = "";
+        format = "[{ $branch }]($style)";
       };
 
-      # Amber/Yellow Git changes (ASCII symbols only)
+      # Soft Gold Git changes
       git_status = {
-        style = "bold bright-yellow";
-        format = "[\\[$all_status$ahead_behind\\]]($style) ";
+        style = "bold #d4b47b";
+        format = " [\\[$all_status$ahead_behind\\]]($style) ";
         conflicted = "X";
         ahead = "↑\${count}";
         behind = "↓\${count}";
@@ -114,24 +113,24 @@
         deleted = "-";
       };
 
-      # Bright Blue Nix Environment Indicator
+      # Powder Blue Nix Environment
       nix_shell = {
-        style = "bold bright-blue";
+        style = "bold #7e9cd8";
         symbol = "";
-        format = "[// NIX: $state( \\($name\\)) ]($style)";
+        format = "[\\( nix: $state \\)]($style) ";
       };
 
-      # Execution Time (Only shows if command takes > 2 seconds)
+      # Execution Time
       cmd_duration = {
-        style = "bold bright-black";
-        format = "[// TMR: $duration ]($style)";
+        style = "bold #68687a";
+        format = "[~ $duration]($style) ";
       };
 
-      # The Blinking Block Cursor Vibe
+      # Cursor Vibe
       character = {
-        success_symbol = "[>_](bold bright-green)";
-        error_symbol = "[>_](bold bright-red)";
-        vimcmd_symbol = "[<_](bold bright-blue)";
+        success_symbol = "[>_](#8abf9c)";
+        error_symbol = "[>_](#d97c8a)";
+        vimcmd_symbol = "[<_](#7e9cd8)";
       };
     };
   };
