@@ -29,7 +29,7 @@
     doc.enable = true;
     man = {
       enable = true;
-      generateCaches = false;
+      cache.enable = false; # https://discourse.nixos.org/t/slow-build-at-building-man-cache/52365/14
     };
     info.enable = true;
   };
@@ -98,25 +98,24 @@
     font = "${pkgs.terminus_font}/share/consolefonts/ter-v16n.psf.gz";
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
-
-    # THE CYBERDECK BASE PALETTE
+    # HABAMAX-ALIGNED PALETTE
     colors = [
-      "1e2030" # Color 0:  Black
-      "e82424" # Color 1:  Red
-      "2dcc70" # Color 2:  Green
-      "e5c07b" # Color 3:  Yellow (Amber)
-      "26bbd9" # Color 4:  Blue
-      "c678dd" # Color 5:  Magenta
-      "56b6c2" # Color 6:  Cyan
-      "828bb8" # Color 7:  White (Light Gray)
-      "444a73" # Color 8:  Bright Black (Used for muted UI elements)
-      "ff3333" # Color 9:  Bright Red (Errors)
-      "33ff00" # Color 10: Bright Green (Phosphor success / user)
-      "ffcc00" # Color 11: Bright Yellow (Git status warning)
-      "0066ff" # Color 12: Bright Blue (Nix shell)
-      "ff00ff" # Color 13: Bright Magenta (Git branch)
-      "00ffff" # Color 14: Bright Cyan (Directory)
-      "ffffff" # Color 15: Bright White
+      "1c1c1c" # Color 0:  Black          (habamax color00 - dark bg)
+      "af5f5f" # Color 1:  Red            (habamax color01 - muted brick red)
+      "5faf5f" # Color 2:  Green          (habamax color02 - muted mid green)
+      "af875f" # Color 3:  Yellow         (habamax color03 - warm tan/brown)
+      "5f87af" # Color 4:  Blue           (habamax color04 - steel blue)
+      "af87af" # Color 5:  Magenta        (habamax color05 - dusty mauve)
+      "5f8787" # Color 6:  Cyan           (habamax color06 - muted teal)
+      "9e9e9e" # Color 7:  White          (habamax color07 - medium grey)
+      "767676" # Color 8:  Bright Black   (habamax color08 - visible dark grey)
+      "d75f87" # Color 9:  Bright Red     (habamax color09 - pink-red)
+      "87d787" # Color 10: Bright Green   (habamax color10 - soft lime green)
+      "d7af87" # Color 11: Bright Yellow  (habamax color11 - warm sand)
+      "5fafd7" # Color 12: Bright Blue    (habamax color12 - sky blue)
+      "d787d7" # Color 13: Bright Magenta (habamax color13 - soft violet)
+      "87afaf" # Color 14: Bright Cyan    (habamax color14 - pale cyan)
+      "c7c7c7" # Color 15: Bright White   (habamax color15 - light grey white)
     ];
   };
   # Services #
@@ -180,7 +179,7 @@
 
   # Networking #
   systemd.network.enable = true;
-  systemd.network.wait-online.anyInterface = true;
+  systemd.network.wait-online.enable = false;
   networking.interfaces.enp13s0f2u1u1.useDHCP = true;
   networking.interfaces.wlan0.useDHCP = true;
   networking.hostName = "zits";
@@ -232,49 +231,6 @@
     }
   ];
   # #
-
-  # Programs misc
-  #programs.zsh = {
-  #  enable = true;
-  #  autosuggestions.enable = true;
-  #  histSize = 10000;
-  #  histFile = "$HOME/.zsh_history";
-  #  setOptions = [
-  #    "HIST_IGNORE_ALL_DUPS"
-  #  ];
-  #  shellAliases = {
-  #    ".." = "cd ..";
-  #    "..." = "cd ../..";
-  #    "dc" = "docker compose";
-  #    "ddie" = "docker system prune -a --volumes";
-  #    "de" = "docker exec -it";
-  #    "dnin" = "docker network inspect";
-  #    "dnls" = "docker network ls";
-  #    "dps" = "docker ps";
-  #    "fd" = "fd -c never"; # never use color output on fd
-  #    "g" = "git";
-  #    "ll" = "ls -l";
-  #    "ls" = "ls --color=auto";
-  #    "nd" = "nix develop";
-  #    "zits" = "sudo nixos-rebuild switch --flake .#zits";
-  #  };
-  #  promptInit = ''
-  #    export GIT_PS1_SHOWDIRTYSTATE=1
-  #    export GIT_PS1_SHOWSTASHSTATE=1
-  #    export GIT_PS1_SHOWCOLORHINTS=1
-  #    export GIT_PS1_SHOWUPSTREAM="auto"
-  #    setopt PROMPT_SUBST
-  #    autoload -U colors && colors
-  #    source $HOME/.git-prompt.sh
-  #    eval "$(direnv hook zsh)"
-  #    bindkey -e
-  #    if [[ "$SSH_TTY" ]]; then
-  #      export PS1='%F{#C600E8}SSH on %m%f %F{magenta}%n%f %B%F{red}%~%f $(__git_ps1 "(%s) ")%b%# '
-  #    else
-  #      export PS1='%F{magenta}%n%f %B%F{blue}%~%f $(__git_ps1 "(%s) ")%b%# '
-  #    fi;
-  #  '';
-  #};
 
   services.flatpak.enable = true;
   programs.steam.enable = true;
@@ -446,7 +402,7 @@
     gopls
     grpcui
     lact
-    libreoffice
+    # libreoffice # FUCK
     # makemkv # FUCK
     neofetch
     nixpkgs-fmt
@@ -462,9 +418,9 @@
     usbutils
     wget
     xdg-utils
-    xorg.libXft
-    xorg.xev
-    xorg.xmodmap
+    libXft
+    xev
+    xmodmap
     xscreensaver
     zathura
     zoom-us
