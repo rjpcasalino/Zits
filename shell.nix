@@ -34,8 +34,8 @@
 
     interactiveShellInit = ''
       eval "$(direnv hook zsh)"
-      # Force Emacs keybindings
-      bindkey -e
+      # Force Vim keybindings (human edit)
+      bindkey -v
       # Explicitly bind Ctrl+A to beginning of line
       bindkey '^A' beginning-of-line
       # Explicitly bind Ctrl+E to end of line
@@ -44,8 +44,8 @@
       # Fix Ctrl+Left and Ctrl+Right for jumping between words
       bindkey '^[[1;5D' backward-word
       bindkey '^[[1;5C' forward-word
-      # Human mode back on, Ryan here. trying to get del key to work
-      bindkey '^[[3~' delete-char
+      # Human mode back on, Ryan here. just the classic:
+      stty erase ^H
     '';
   };
 

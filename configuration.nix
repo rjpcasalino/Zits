@@ -393,6 +393,7 @@
     dust
     ed
     eslint
+    fastfetch
     fd
     feh
     ffmpeg-full
@@ -402,14 +403,13 @@
     gopls
     grpcui
     lact
-    # libreoffice # FUCK
-    # makemkv # FUCK
-    neofetch
+    libreoffice
+    makemkv
     nixpkgs-fmt
     nixpkgs-review
     pamixer
     pciutils
-    # rpi-imager # fucking broken and no time to fix.
+    rpi-imager # fucking broken and no time to fix.
     ripgrep
     screen
     scrot
@@ -421,6 +421,7 @@
     libXft
     xev
     xmodmap
+    xbindkeys
     xscreensaver
     zathura
     zoom-us
@@ -435,9 +436,6 @@
     libbluray
     mons
     mpv-unwrapped # see overlays
-    nodejs
-    nodePackages_latest.prettier
-    nodePackages_latest.eslint # might be doing this twice (in home.nix too)
     overskride
     polybar
     p11-kit

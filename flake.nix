@@ -24,7 +24,6 @@
       modules = with self.nixosModules; [
         ./configuration.nix
         sops-nix.nixosModules.sops
-        # determinate.nixosModules.default
       ];
     };
   };
