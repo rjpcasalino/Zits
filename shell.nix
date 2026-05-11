@@ -46,6 +46,57 @@
       bindkey '^[[1;5C' forward-word
       # Human mode back on, Ryan here. just the classic:
       stty erase ^H
+      # Set the path for your custom log file
+      export CMD_LOG_FILE="$HOME/.advanced_history.log"
+      export CMD_LOG_STATE="$HOME/.cmdlogger_active"
+
+      # State variables to pass data between hooks
+      typeset -g _cmdlogger_start_time
+      typeset -g _cmdlogger_current_cmd
+
+      # The control interface (remains the same)
+      cmdlogger() {
+          case "$1" in
+              start)
+                  touch "$CMD_LOG_STATE"
+                  echo "Logging enabled. Outputting to $CMD_LOG_FILE" ;;
+              stop)
+                  rm -f "$CMD_LOG_STATE"
+                  echo "Logging disabled." ;;
+              *) echo "Usage: cmdlogger {start|stop}" ;;
+          esac
+      }
+
+      # Hook 1: Runs right before execution
+      preexec() {
+          if [[ -f "$CMD_LOG_STATE" ]]; then
+              _cmdlogger_start_time=$(date +%s)
+              _cmdlogger_current_cmd="$1"
+          fi
+      }
+
+      # Hook 2: Runs immediately after the command finishes
+      precmd() {
+          # Capture the exit code immediately before any other command runs
+          local exit_code=$?
+
+          if [[ -f "$CMD_LOG_STATE" && -n "$_cmdlogger_current_cmd" ]]; then
+              local end_time=$(date +%s)
+              local duration=$(( end_time - _cmdlogger_start_time ))
+              local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+              # Check for specific development environments
+              local env_state=""
+              if [[ -n "$IN_NIX_SHELL" ]]; then
+                  env_state="[nix] "
+              fi
+
+              echo "[$timestamp] [Status: $exit_code] [$duration s] $USER $env_state$PWD > $_cmdlogger_current_cmd" >> "$CMD_LOG_FILE"
+
+              # Clear the variable so hitting 'Enter' on an empty prompt doesn't duplicate logs
+              _cmdlogger_current_cmd=""
+          fi
+      }
     '';
   };
 
