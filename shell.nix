@@ -36,6 +36,8 @@
       eval "$(direnv hook zsh)"
       # Force Vim keybindings (human edit)
       bindkey -v
+      # reverse search
+      bindkey '^R' history-incremental-search-backward
       # Explicitly bind Ctrl+A to beginning of line
       bindkey '^A' beginning-of-line
       # Explicitly bind Ctrl+E to end of line
