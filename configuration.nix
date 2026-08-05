@@ -6,6 +6,7 @@
     ./hardware-configuration.nix
     ./editor.nix
     ./shell.nix
+    ./ghostty.nix
   ];
 
   ## boot ##
@@ -63,7 +64,7 @@
     settings.auto-optimise-store = true;
     # auto-allocate-uids started throwing warnings with recent update to Uakari
     extraOptions = ''
-      experimental-features = nix-command flakes auto-allocate-uids
+      experimental-features = nix-command flakes auto-allocate-uids wasm-builtin
     '';
     channel.enable = false;
     registry.nixpkgs.flake = inputs.nixpkgs;
@@ -125,6 +126,7 @@
   programs.seahorse.enable = true;
   # git
   programs.git.enable = true;
+  programs.nix-ld.enable = true;
   # General Purpose Mouse daemon—enables mouse support in virtual consoles
   services.gpm.enable = true;
   services.kmscon.enable = false;
@@ -382,7 +384,7 @@
   environment.wordlist.enable = true;
   environment.systemPackages = with pkgs; [
     age
-    arandr
+    #arandr
     #awscli2
     bluez-tools
     bc
