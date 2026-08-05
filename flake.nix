@@ -14,9 +14,13 @@
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     };
+    ghostty = {
+      url = "github:ghostty-org/ghostty";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, sops-nix, ... }@inputs: {
+  outputs = { self, nixpkgs, sops-nix, determinate, ghostty, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -24,6 +28,7 @@
       modules = with self.nixosModules; [
         ./configuration.nix
         sops-nix.nixosModules.sops
+        determinate.nixosModules.default
       ];
     };
   };

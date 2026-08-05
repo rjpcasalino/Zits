@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 {
   # Expose the TrueType version of Terminus to fontconfig so Ghostty can see it
@@ -6,10 +6,11 @@
     terminus_font_ttf
   ];
 
+
   environment.systemPackages = [
-    (pkgs.symlinkJoin {
-      name = "ghostty-wrapped";
-      paths = [ pkgs.ghostty ];
+   (pkgs.symlinkJoin {
+     name = "ghostty-wrapped";
+     paths = [ inputs.ghostty.packages.${pkgs.system}.default ];
       buildInputs = [ pkgs.makeWrapper ];
       postBuild = ''
         wrapProgram $out/bin/ghostty \
