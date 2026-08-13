@@ -23,6 +23,10 @@
 
   # Direct system /etc/sway/config to use /etc/nixos/sway.conf
   environment.etc."sway/config".source = ./sway.conf;
+  environment.etc."sway/sway-window-switcher.py" = {
+    source = ./sway-window-switcher.py;
+    mode = "0755";
+  };
 
   # Direct system /etc/xdg/foot/foot.ini to use /etc/nixos/foot.ini
   environment.etc."xdg/foot/foot.ini".source = ./foot.ini;
