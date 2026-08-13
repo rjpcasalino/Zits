@@ -10,7 +10,13 @@ my $wallpaper_dir = "$ENV{HOME}/Pictures/Wallpaper";
 $SIG{USR1} = sub { print "Skipping to next wallpaper...\n"; };
 
 # Ensure daemon is running (simplified)
-system("pgrep -x awww-daemon > /dev/null || awww-daemon &");
+# system("pgrep -x awww-daemon > /dev/null || awww-daemon &");
+
+# Ensure awww-daemon is running and responsive over IPC
+if (system("awww query > /dev/null 2>&1") != 0) {
+    system("awww-daemon &");
+    sleep(1);
+}
 
 while (1) {
     # Shuffle the glob output for true randomness
