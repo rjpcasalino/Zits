@@ -122,6 +122,11 @@
   # Services #
   services.dictd.enable = false;
   services.gnome.gnome-keyring.enable = true;
+
+  programs.custom-ghostty = {
+    enable = true;
+    prerelease = false; # Set to false to immediately downgrade to the stable release
+  };
   # seahorse is a UI for keyring
   programs.seahorse.enable = true;
   # git
@@ -242,6 +247,8 @@
 
     # PS5 DualSense controller over bluetooth hidraw
     KERNEL=="hidraw*", KERNELS=="*054C:0CE6*", MODE="0660", TAG+="uaccess"
+    # NuPhy keyboard WebHID access for NuPhyIO
+    KERNEL=="hidraw*", ATTRS{idVendor}=="19f5", MODE="0666"
   '';
   # #
 
@@ -406,7 +413,7 @@
     grpcui
     lact
     libreoffice
-    makemkv
+    (makemkv.override { ffmpeg = ffmpeg_6; }) # The errors you are seeing ('AVCodec' has no member named...) happen because the newest version of ffmpeg (version 7.x) removed several deprecated variables that MakeMKV's open-source components still rely on.
     nixpkgs-fmt
     nixpkgs-review
     pamixer
@@ -441,6 +448,7 @@
     overskride
     polybar
     p11-kit
+    python3
     sops
     (vscode-with-extensions.override {
       vscodeExtensions = with vscode-extensions; [

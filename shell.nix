@@ -47,7 +47,12 @@
       bindkey '^[[1;5D' backward-word
       bindkey '^[[1;5C' forward-word
       # Human mode back on, Ryan here. just the classic:
-      stty erase ^H
+      # set erase character based on terminal emulator
+      if [[ "$TERM" == "xterm" ]] || [[ "$TERM" == "xterm-color" ]]; then
+          stty erase '^H'
+      else
+          stty erase '^?'
+      fi
       # Set the path for your custom log file
       export CMD_LOG_FILE="$HOME/.advanced_history.log"
       export CMD_LOG_STATE="$HOME/.cmdlogger_active"
