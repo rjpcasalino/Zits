@@ -346,6 +346,31 @@
     desktopManager.wallpaper.mode = "scale";
   };
   services.displayManager.gdm.enable = true;
+  services.displayManager.gdm.wayland = true;
+
+  # Wayland / Sway experimental setup #
+  programs.sway = {
+    enable = true;
+    wrapperFeatures.gtk = true;
+    extraPackages = with pkgs; [
+      swaylock
+      swayidle
+      swaybg
+      waybar
+      wofi
+      wl-clipboard
+      grim
+      slurp
+      mako
+      qt5.qtwayland
+      qt6.qtwayland
+    ];
+  };
+
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1"; # Wayland support for Electron/Chromium apps
+  };
+
   services.libinput = {
     enable = true;
     mouse = {
@@ -362,7 +387,7 @@
   xdg.portal = {
     enable = true;
     configPackages = [ pkgs.gnome-session ];
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-wlr ];
   };
   # #
 
