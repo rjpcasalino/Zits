@@ -346,7 +346,6 @@
     desktopManager.wallpaper.mode = "scale";
   };
   services.displayManager.gdm.enable = true;
-  services.displayManager.gdm.wayland = true;
 
   # Wayland / Sway experimental setup #
   programs.sway = {
