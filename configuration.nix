@@ -391,8 +391,8 @@
   environment.wordlist.enable = true;
   environment.systemPackages = with pkgs; [
     age
-    #arandr
-    #awscli2
+    arandr
+    awscli2
     bluez-tools
     bc
     curl
@@ -413,12 +413,12 @@
     grpcui
     lact
     libreoffice
-    (makemkv.override { ffmpeg = ffmpeg_6; }) # The errors you are seeing ('AVCodec' has no member named...) happen because the newest version of ffmpeg (version 7.x) removed several deprecated variables that MakeMKV's open-source components still rely on.
+    (makemkv.override { ffmpeg = ffmpeg_6; }) # WARNING: broken in ffmpeg_7. File issue in nixpkgs for maintainer.
     nixpkgs-fmt
     nixpkgs-review
     pamixer
     pciutils
-    rpi-imager # fucking broken and no time to fix.
+    rpi-imager
     ripgrep
     screen
     scrot
@@ -440,7 +440,7 @@
     gnupg
     gnumake
     google-chrome
-    gemini-cli
+    antigravity-cli
     libaacs
     libbluray
     mons
