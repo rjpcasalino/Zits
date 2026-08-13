@@ -34,6 +34,10 @@
     source = ./wallpaper-changer.pl;
     mode = "0755";
   };
+  environment.etc."sway/status.sh" = {
+    source = ./sway-status-bar.sh;
+    mode = "0755";
+  };
 
   # Direct system /etc/xdg/foot/foot.ini to use /etc/nixos/foot.ini
   environment.etc."xdg/foot/foot.ini".source = ./foot.ini;

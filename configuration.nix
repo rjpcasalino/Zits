@@ -8,6 +8,7 @@
     ./shell.nix
     ./ghostty.nix
     ./sway.nix
+    ./tinywl.nix
   ];
 
   ## boot ##
@@ -123,6 +124,8 @@
   # Services #
   services.dictd.enable = false;
   services.gnome.gnome-keyring.enable = true;
+  services.seatd.enable = true;
+
 
   programs.custom-ghostty = {
     enable = true;
@@ -527,6 +530,7 @@
       "scanner"
       "sound"
       "wheel"
+      "seat"
     ];
     shell = "${pkgs.zsh}${pkgs.zsh.shellPath}";
   };
