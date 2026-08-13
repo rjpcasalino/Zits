@@ -1,0 +1,73 @@
+===============================================================================
+                     SWAY + CWM KEYBINDINGS CHEATSHEET
+===============================================================================
+Default Modifier: $mod = Super / Logo / Windows key (or Alt / Mod1 if configured)
+
+-------------------------------------------------------------------------------
+1. APPLICATION & COMMAND LAUNCHERS (cwm-style)
+-------------------------------------------------------------------------------
+$mod + Return          Open Terminal (foot)
+Ctrl + $mod + Return   Run Exec Prompt (wofi --show run for binaries in $PATH)
+$mod + ?               Run Exec Prompt (wofi --show run for binaries in $PATH)
+$mod + d               App Launcher (wofi --show drun for .desktop apps)
+$mod + .               SSH Prompt (wofi menu of hosts from ~/.ssh/known_hosts)
+
+-------------------------------------------------------------------------------
+2. WINDOW NAVIGATION & SWITCHING (cwm-style)
+-------------------------------------------------------------------------------
+Alt + Tab / $mod + Tab     Cycle forward through open windows in workspace
+Alt + Shift + Tab          Cycle backward through open windows in workspace
+$mod + Shift + Tab         Cycle backward through open windows in workspace
+$mod + w  (or Alt + w)     Window Menu (wofi fuzzy switcher for all open windows)
+$mod + h / j / k / l       Focus left / down / up / right (Vim style)
+$mod + Arrow Keys          Focus left / down / up / right
+
+-------------------------------------------------------------------------------
+3. WINDOW & LAYOUT MANAGEMENT (cwm-style)
+-------------------------------------------------------------------------------
+$mod + x               Close / Kill focused window (cwm window-close)
+$mod + Shift + q       Close / Kill focused window
+Ctrl + $mod + h        Hide window to Scratchpad (cwm window-hide)
+$mod + u               Unhide window from Scratchpad (cwm window-unhide)
+$mod + Shift + -       Move window to Scratchpad
+$mod + -               Show Scratchpad window
+$mod + m               Toggle Fullscreen (cwm window-maximize)
+$mod + f               Toggle Fullscreen
+$mod + Shift + Space   Toggle Floating mode for window
+$mod + Space           Toggle Focus between Tiling and Floating layers
+$mod + b               Split horizontally
+$mod + v               Split vertically
+$mod + s               Set layout to Stacking
+$mod + t               Set layout to Tabbed
+$mod + e               Toggle Split layout
+
+-------------------------------------------------------------------------------
+4. WORKSPACE NAVIGATION (cwm groups)
+-------------------------------------------------------------------------------
+$mod + [1 - 0]              Switch to workspace 1 - 10
+$mod + Shift + [1 - 0]      Move focused container to workspace 1 - 10
+Ctrl + Alt + Tab            Cycle to next workspace
+Ctrl + Alt + Shift + Tab    Cycle to previous workspace
+Ctrl + $mod + Tab           Cycle to next workspace
+Ctrl + $mod + Shift + Tab   Cycle to previous workspace
+
+-------------------------------------------------------------------------------
+5. RESIZING WINDOWS
+-------------------------------------------------------------------------------
+$mod + r               Enter Resize mode
+  h / j / k / l        Shrink / Grow width / height (Vim style)
+  Arrow Keys           Shrink / Grow width / height
+  Return / Escape      Exit Resize mode
+
+-------------------------------------------------------------------------------
+6. SYSTEM CONTROLS & UTILITIES
+-------------------------------------------------------------------------------
+$mod + Shift + c       Reload Sway configuration
+$mod + Shift + e       Exit Sway (session logout prompt)
+Print                  Take screenshot (grim)
+Audio Mute             XF86AudioMute
+Volume Up / Down       XF86AudioRaiseVolume / XF86AudioLowerVolume
+Mic Mute               XF86AudioMicMute
+Media Play/Pause/Next  XF86AudioPlay / XF86AudioPause / XF86AudioNext / Prev
+Brightness Up / Down   XF86MonBrightnessUp / XF86MonBrightnessDown
+===============================================================================

@@ -181,8 +181,46 @@
   # #
 
   # Fonts #
-  fonts.enableDefaultPackages = true;
-  fonts.enableGhostscriptFonts = true;
+  fonts.enableGhostscriptFonts = true; # see how nix can confuse?
+  fonts = {
+    enableDefaultPackages = true;
+
+    # Install standard system fonts & popular browser web fonts
+    packages = with pkgs; [
+      noto-fonts
+      noto-fonts-cjk-sans
+      noto-fonts-color-emoji
+      liberation_ttf          # Drop-in replacement for Arial, Times New Roman, Courier
+      corefonts               # Microsoft fonts (Arial, Times, Verdana, etc.)
+      dejavu_fonts
+      font-awesome            # Icon font widely used on web pages
+      roboto
+    ];
+
+    # Fine-tune font rendering and defaults for browsers
+    fontconfig = {
+      enable = true;
+
+      # Crisp font rendering settings
+      antialias = true;
+      hinting = {
+        enable = true;
+        style = "slight";     # "slight" or "full" prevents blurry text
+      };
+      subpixel = {
+        rgba = "rgb";         # Subpixel rendering for LCD/LED screens
+        lcdfilter = "default";
+      };
+
+      # Set default font fallbacks so browsers don't use ugly defaults
+      defaultFonts = {
+        serif = [ "Liberation Serif" "Noto Serif" ];
+        sansSerif = [ "Liberation Sans" "Noto Sans" ];
+        monospace = [ "Liberation Mono" "Noto Sans Mono" ];
+        emoji = [ "Noto Color Emoji" ];
+      };
+    };
+  };
   # #
 
   # Networking #
@@ -440,6 +478,7 @@
     clamav
     firefox
     htop
+    geoclue2
     gnupg
     gnumake
     google-chrome

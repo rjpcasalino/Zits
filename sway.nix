@@ -18,6 +18,9 @@
       mako
       qt5.qtwayland
       qt6.qtwayland
+      gammastep   # Redshift alternative for Wayland
+      mpvpaper    # Interactive 4K video/GIF wallpaper for Wayland
+      awww        # Animated GIF wallpaper engine with smooth transitions (formerly swww)
     ];
   };
 
@@ -25,6 +28,10 @@
   environment.etc."sway/config".source = ./sway.conf;
   environment.etc."sway/sway-window-switcher.py" = {
     source = ./sway-window-switcher.py;
+    mode = "0755";
+  };
+  environment.etc."sway/wallpaper-changer.pl" = {
+    source = ./wallpaper-changer.pl;
     mode = "0755";
   };
 
