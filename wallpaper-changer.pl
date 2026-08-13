@@ -32,8 +32,17 @@ while (1) {
     for my $file (@files) {
         next unless -f $file;
         print "Setting: $file\n";
-        
-        system("awww", "img", $file, "--transition-type", "fade", "--transition-step", "90");
+
+        my $rc = system {
+            "awww"
+        } "awww", "img", $file, "--transition-type", "fade", "--transition-step", "90";
+
+        if ($rc == -1) {
+            die "Failed to execute awww: $!";
+        }
+        elsif ($rc != 0) {
+            die "awww exited with status " . ($rc >> 8);
+        }
         sleep($interval);
     }
 }
