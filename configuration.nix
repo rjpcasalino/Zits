@@ -249,10 +249,6 @@
     secretsFile = config.sops.secrets."wireless.env".path;
     userControlled.enable = true;
     scanOnLowSignal = false;
-    # we don't need to blacklist these bssid anymore
-    # but good example of how to do so.
-    # FIXME:
-    # pskRaw no longer works for WPA3?
     networks = {
       "ext:ssid" = {
         pskRaw = "ext:psk";
@@ -262,11 +258,11 @@
       };
     };
   };
+
   # see: https://discourse.nixos.org/t/a-fast-way-for-modifying-etc-hosts-using-networking-extrahosts/4190
   # note: the hosts mode is to allow vpn split to work for mct (no longer needed but will del later - July 2024)
   # environment.etc.hosts.mode = "0644";
-
-  # not sure this extraHosts stuff is working
+  # not sure this extraHosts stuff is even working?
   networking.extraHosts = ''
     172.17.0.1 host.docker.internal
     0.0.0.0 www.asusrouter.com
@@ -274,7 +270,7 @@
 
   # Firewall
   networking.firewall.enable = true;
-  # synergy is 24800
+  # synergy is 24800; but we do not use synergy anymore
   networking.firewall.allowedTCPPorts = [ ];
   # https://datatracker.ietf.org/doc/html/rfc6056
   # allows tftp
@@ -288,6 +284,7 @@
 
   services.flatpak.enable = true;
   programs.steam.enable = true;
+  # TODO: look into finding the udev rules for NeoGeo controller from anniversary mini cabinet
   services.udev.extraRules = ''
     # PS5 DualSense controller over USB hidraw
     KERNEL=="hidraw*", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", MODE="0660", TAG+="uaccess"
@@ -299,7 +296,7 @@
   '';
   # #
 
-  services.redshift.enable = true;
+  services.redshift.enable = true; # not in Wayland
   location.latitude = 47.608013;
   location.longitude = -122.335167;
 
@@ -319,7 +316,8 @@
   hardware.sane.extraBackends = [ pkgs.sane-airscan ];
   # for a WiFi printer
   services.avahi.openFirewall = true;
-  services.printing.drivers = [ pkgs.hplip pkgs.brlaser pkgs.brgenml1lpr pkgs.brgenml1cupswrapper ];
+  # using brother printer
+  services.printing.drivers = [ pkgs.brlaser pkgs.brgenml1lpr pkgs.brgenml1cupswrapper ];
   # #
 
   # Audio and Sound #
@@ -395,6 +393,8 @@
   services.displayManager.gdm.enable = true;
 
 
+  # TODO: explain in detail or link to somewhere that does
+  # what these settings mean...
   services.libinput = {
     enable = true;
     mouse = {
@@ -405,8 +405,7 @@
   };
   # #
 
-  # TODO:
-  # learn more about xdg—still confusing to me
+  # TODO: learn more about xdg—still confusing to me
   xdg.menus.enable = true;
   xdg.portal = {
     enable = true;
@@ -446,7 +445,8 @@
     bc
     curl
     cmake
-    deploy-rs
+    # https://github.com/nix-community/colmena
+    colmena
     direnv
     dust
     ed
