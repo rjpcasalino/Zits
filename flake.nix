@@ -13,15 +13,13 @@
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     };
-    ghostty = {
-      url = "github:ghostty-org/ghostty";
-    };
-    awww = {
-      url = "git+https://codeberg.org/LGFae/awww";
-    };
+    # ghostty = {
+    #  url = "github:ghostty-org/ghostty";
+    # };
+    # add to putputs if you want it ^; using foot for now and xterm otherwise
   };
 
-  outputs = { self, nixpkgs, sops-nix, determinate, ghostty, awww, ... }@inputs: {
+  outputs = { self, nixpkgs, sops-nix, determinate, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";

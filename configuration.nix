@@ -121,11 +121,15 @@
       "c7c7c7" # Color 15: Bright White   (habamax color15 - light grey white)
     ];
   };
-  # Services #
+  # General Services #
   services.dictd.enable = false;
   services.gnome.gnome-keyring.enable = true;
   services.seatd.enable = true;
   services.geoclue2.enable = false; # see: https://askubuntu.com/questions/1537682/geoclue3863-failed-to-query-location-query-location-soup-error-not-found
+  services.mullvad-vpn = {
+    enable = true;
+    gui.enable = true;
+  };
 
 
   programs.custom-ghostty = {
