@@ -125,6 +125,7 @@
   services.dictd.enable = false;
   services.gnome.gnome-keyring.enable = true;
   services.seatd.enable = true;
+  services.geoclue2.enable = false; # see: https://askubuntu.com/questions/1537682/geoclue3863-failed-to-query-location-query-location-soup-error-not-found
 
 
   programs.custom-ghostty = {
@@ -481,7 +482,6 @@
     clamav
     firefox
     htop
-    geoclue2
     gnupg
     gnumake
     google-chrome

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, inputs, ... }:
 
 let
   wofiStyle = pkgs.writeText "wofi-style.css" ''
@@ -77,7 +77,9 @@ in
       qt6.qtwayland
       gammastep # Redshift alternative for Wayland
       mpvpaper # Interactive 4K video/GIF wallpaper for Wayland
-      awww # Animated GIF wallpaper engine with smooth transitions (formerly swww)
+      # awww # Animated GIF wallpaper engine with smooth transitions (formerly swww)
+      # flakes way below...
+      inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
     ];
   };
 

@@ -9,18 +9,19 @@
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     };
     ghostty = {
       url = "github:ghostty-org/ghostty";
-      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    awww = {
+      url = "git+https://codeberg.org/LGFae/awww";
     };
   };
 
-  outputs = { self, nixpkgs, sops-nix, determinate, ghostty, ... }@inputs: {
+  outputs = { self, nixpkgs, sops-nix, determinate, ghostty, awww, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
