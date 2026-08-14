@@ -9,18 +9,17 @@
     };
     sops-nix = {
       url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     };
-    ghostty = {
-      url = "github:ghostty-org/ghostty";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # ghostty = {
+    #  url = "github:ghostty-org/ghostty";
+    # };
+    # add to putputs if you want it ^; using foot for now and xterm otherwise
   };
 
-  outputs = { self, nixpkgs, sops-nix, determinate, ghostty, ... }@inputs: {
+  outputs = { self, nixpkgs, sops-nix, determinate, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
