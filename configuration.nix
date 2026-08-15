@@ -293,6 +293,8 @@
     KERNEL=="hidraw*", KERNELS=="*054C:0CE6*", MODE="0660", TAG+="uaccess"
     # NuPhy keyboard WebHID access for NuPhyIO
     KERNEL=="hidraw*", ATTRS{idVendor}=="19f5", MODE="0666"
+
+    SUBSYSTEM=="input", ATTRS{name}=="*GHICCod USB Gamepad*", MODE="0660", GROUP="input"
   '';
   # #
 
