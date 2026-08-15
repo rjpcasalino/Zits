@@ -498,6 +498,7 @@
     polybar
     p11-kit
     python3
+    sshfs
     sops
     (vscode-with-extensions.override {
       vscodeExtensions = with vscode-extensions; [

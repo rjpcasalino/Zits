@@ -19,10 +19,16 @@ while true; do
     IFACE=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $5; exit}')
     IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7}')
     
-    # Refresh public IP periodically in background (every ~60s via loop count or async check)
+    # Active Interfaces & IPs (State UP, excluding loopback)
+    IFACES_ACTIVE=$(ip -o -4 addr show | grep -v ' state DOWN' | awk '$2 != "lo" {print $2 ":" $4}' | cut -d'/' -f1 | tr '\n' ' ' | sed 's/ $//')
+
+    # Total Active TCP/UDP Connections
+    CONN_COUNT=$(ss -tua state established 2>/dev/null | tail -n +2 | wc -l)
+
+    # Refresh public IP periodically in background
     if [ -f /tmp/sway_pub_ip ]; then
         PUB=$(cat /tmp/sway_pub_ip)
-    fi
+    fi 
     
     # Active VPN/Tunnel Check (wireguard, tun, tap)
     VPN=$(ip link show | grep -E 'wg|tun|mullvad|proton' | awk -F': ' '{print $2}' | head -n1)
@@ -46,20 +52,15 @@ while true; do
     # -------------------------------------------------------------------------
     # 2. DISK SPACE (All real physical mounts)
     # -------------------------------------------------------------------------
-    # Filters out temporary/virtual filesystems (tmpfs, devtmpfs, squashfs, overlay)
     DISKS=$(df -h --output=target,pcent -x tmpfs -x devtmpfs -x squashfs -x overlay -x efivarfs 2>/dev/null | \
             tail -n +2 | awk '{printf "%s:%s ", $1, $2}' | sed 's/ $//')
 
     # -------------------------------------------------------------------------
     # 3. CPU & LOAD & TEMP
     # -------------------------------------------------------------------------
-    # Load Averages (1m 5m 15m)
     LOAD=$(awk '{print $1" "$2" "$3}' /proc/loadavg)
-    
-    # CPU Usage percentage
     CPU=$(top -bn1 | grep "Cpu(s)" | awk '{print int(100 - $8)"%"}')
 
-    # Thermal Temp (Thermal Zone 0 or Coretemp)
     if [ -f /sys/class/thermal/thermal_zone0/temp ]; then
         TEMP=$(($(cat /sys/class/thermal/thermal_zone0/temp) / 1000))
         TEMP_STR=" (${TEMP}°C)"
@@ -73,7 +74,7 @@ while true; do
     MEM=$(free -h | awk '/^Mem:/ {print $3 "/" $2}')
 
     # -------------------------------------------------------------------------
-    # 5. BATTERY & POWER (If applicable)
+    # 5. BATTERY & POWER
     # -------------------------------------------------------------------------
     BAT_STR=""
     if [ -d /sys/class/power_supply/BAT0 ]; then
@@ -103,7 +104,7 @@ while true; do
     # -------------------------------------------------------------------------
     # OUTPUT FORMAT
     # -------------------------------------------------------------------------
-    echo -e "\U1F1FA\U1F1F8 LAN: ${IP:-down}${NET_SPEED} | PUB: ${PUB}${VPN_STR} | DISK: [ ${DISKS} ] | CPU: ${CPU}${TEMP_STR} (load ${LOAD}) | RAM: ${MEM}${BAT_STR} | VOL: ${VOL} | UP: ${UPTIME} | ${DATE}"
+    echo -e "\U1F1FA\U1F1F8 IF: [ ${IFACES_ACTIVE} ] | CONN: ${CONN_COUNT}${NET_SPEED} | PUB: ${PUB}${VPN_STR} | DISK: [ ${DISKS} ] | CPU: ${CPU}${TEMP_STR} (load ${LOAD}) | RAM: ${MEM}${BAT_STR} | VOL: ${VOL} | UP: ${UPTIME} | ${DATE}"
 
     # Asynchronously refresh Public IP every 30 iterations (~60 seconds)
     ((COUNTER++))
