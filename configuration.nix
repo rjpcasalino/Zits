@@ -130,8 +130,8 @@
     enable = true;
     gui.enable = true;
   };
-
-
+  services.flatpak.enable = true;
+  programs.steam.enable = true;
   programs.custom-ghostty = {
     enable = true;
     prerelease = false; # Set to false to immediately downgrade to the stable release
@@ -156,6 +156,22 @@
       HCC_AMDGPU_TARGET = "gfx1100";
     };
   };
+
+  services.redshift.enable = true; # not in Wayland
+  location.latitude = 47.608013;
+  location.longitude = -122.335167;
+
+  services.udev.extraRules = ''
+    # PS5 DualSense controller over USB hidraw
+    KERNEL=="hidraw*", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", MODE="0660", TAG+="uaccess"
+    # PS5 DualSense controller over bluetooth hidraw
+    KERNEL=="hidraw*", KERNELS=="*054C:0CE6*", MODE="0660", TAG+="uaccess"
+    # NuPhy keyboard WebHID access for NuPhyIO
+    KERNEL=="hidraw*", ATTRS{idVendor}=="19f5", MODE="0666"
+    # NeoGeo
+    SUBSYSTEM=="input", ATTRS{name}=="*GHICCod USB Gamepad*", MODE="0660", GROUP="input"
+  '';
+  # #
   # #
 
   # Internationalisation properties #
@@ -281,26 +297,6 @@
     }
   ];
   # #
-
-  services.flatpak.enable = true;
-  programs.steam.enable = true;
-  # TODO: look into finding the udev rules for NeoGeo controller from anniversary mini cabinet
-  services.udev.extraRules = ''
-    # PS5 DualSense controller over USB hidraw
-    KERNEL=="hidraw*", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0ce6", MODE="0660", TAG+="uaccess"
-
-    # PS5 DualSense controller over bluetooth hidraw
-    KERNEL=="hidraw*", KERNELS=="*054C:0CE6*", MODE="0660", TAG+="uaccess"
-    # NuPhy keyboard WebHID access for NuPhyIO
-    KERNEL=="hidraw*", ATTRS{idVendor}=="19f5", MODE="0666"
-
-    SUBSYSTEM=="input", ATTRS{name}=="*GHICCod USB Gamepad*", MODE="0660", GROUP="input"
-  '';
-  # #
-
-  services.redshift.enable = true; # not in Wayland
-  location.latitude = 47.608013;
-  location.longitude = -122.335167;
 
   # CUPS and SANE #
   services.printing.enable = true;
