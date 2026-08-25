@@ -9,6 +9,7 @@
     ./ghostty.nix
     ./sway.nix
     ./tinywl.nix
+    ./foot.nix
   ];
 
   ## boot ##
@@ -197,6 +198,13 @@
     wheelNeedsPassword = false;
   };
   security.sudo.wheelNeedsPassword = false;
+  security.sudo.extraRules = [{
+  users = [ "rjpc" ];
+  commands = [{
+    command = "/usr/local/bin/toggle-net.sh";
+    options = [ "NOPASSWD" ];
+  }];
+}];
   # #
 
   # Anti-virus #
@@ -460,7 +468,7 @@
     grpcui
     lact
     libreoffice
-    (makemkv.override { ffmpeg = ffmpeg_6; }) # WARNING: broken in ffmpeg_7. File issue in nixpkgs for maintainer.
+    (makemkv.override { ffmpeg_8 = ffmpeg_6; }) # WARNING: broken in ffmpeg_7. File issue in nixpkgs for maintainer.
     nixpkgs-fmt
     nixpkgs-review
     pamixer

@@ -14,13 +14,13 @@ my $wallpaper_dir = "$ENV{HOME}/Pictures/Wallpaper";
 # Trap SIGUSR1 to interrupt sleep and immediately skip to the next wallpaper
 $SIG{USR1} = sub { print "Skipping to next wallpaper...\n"; };
 
-# Ensure awww-daemon is running and responsive
-if (system("awww query > /dev/null 2>&1") != 0) {
-    system("awww-daemon &");
-    sleep(1);
-}
-
 while (1) {
+   # Ensure awww-daemon is running and responsive
+    if (system("awww query > /dev/null 2>&1") != 0) {
+            system("awww-daemon &");
+            sleep(1);
+    }
+
     my @files = shuffle(glob("$wallpaper_dir/*"));
 
     unless (@files) {
@@ -38,10 +38,10 @@ while (1) {
         } "awww", "img", $file, "--transition-type", "fade", "--transition-step", "90";
 
         if ($rc == -1) {
-            die "Failed to execute awww: $!";
+            warn "Failed to execute awww: $!";
         }
         elsif ($rc != 0) {
-            die "awww exited with status " . ($rc >> 8);
+            warn "awww exited with status " . ($rc >> 8);
         }
         sleep($interval);
     }
