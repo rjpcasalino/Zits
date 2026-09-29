@@ -1,80 +1,20 @@
-{ config, pkgs, inputs, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
-  wofiStyle = pkgs.writeText "wofi-style.css" ''
-      window {
-        margin: 0px;
-        padding: 0px;
-        opacity: 0.9;
-        border: 2px solid #99e1d0;
-        background-color: rgba(234, 253, 240, 0.9);
-        border-radius: 0 10px 10px 0;
-    }
+  wm = config.wayland;
 
-    #input {
-        margin: 5px;
-        border: none;
-        color: #000000;
-        background-color: #fdba00;
-    }
-
-    #inner-box {
-        margin: 5px;
-        border: none;
-        background-color: #eafdf0;
-    }
-
-    #outer-box {
-        margin: 5px;
-        border: none;
-        background-color: #eafdf0;
-    }
-
-    #text {
-        margin: 5px;
-        border: none;
-        color: #000000;
-    }
-
-    #entry:selected {
-        background-color: #7897e8;
-        border-radius: 6px;
-    }
-
-    list {
-        background-color: #7897e8;
-        border-radius: 6px;
-    }
-  '';
-
-  customWofi = pkgs.symlinkJoin {
-    name = "wofi-custom";
-    paths = [ pkgs.wofi ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/wofi --add-flags "--style ${wofiStyle}"
+  # Copy a script out of the config tree into the store, executable,
+  # keeping whatever interpreter its shebang declares. Used instead of
+  # dropping files into /etc so the session always runs the version
+  # belonging to the current system closure.
+  installScript =
+    name: path:
+    pkgs.runCommand name { } ''
+      install -Dm755 ${path} $out/bin/${name}
     '';
-  };
 
-  # Custom GTK CSS for nwg-dock
-  nwgDockStyle = pkgs.writeText "nwg-dock-style.css" ''
-    window {
-      background-color: rgba(234, 253, 240, 0.9);
-      border: 2px solid #99e1d0;
-      border-radius: 10px;
-    }
-    #box {
-      padding: 4px;
-    }
-    image {
-      padding: 4px;
-      margin: 0px 4px;
-    }
-    image:hover {
-      background-color: #7897e8;
-      border-radius: 6px;
-    }
-  '';
+  swayWindowSwitcher = installScript "sway-window-switcher" ./sway-window-switcher.py;
+  wallpaperChanger = wm.wallpaperChanger;
 in
 
 {
@@ -87,19 +27,16 @@ in
       swaylock
       swayidle
       swaybg
-      waybar
       wl-clipboard
       grim
       slurp
-      customWofi
-      nwg-dock
       mako
       qt5.qtwayland
       qt6.qtwayland
-      gammastep 
-      mpvpaper 
-      awww 
-    ];
+      gammastep
+      mpvpaper
+      awww
+    ] ++ [ wm.wofi wm.nwgDock wm.statusBar ] ++ wm.statusRuntimeDeps;
   };
 
   # Direct system /etc/sway/config to use /etc/nixos/sway.conf
@@ -129,14 +66,13 @@ in
 
     ### Night Light / Redshift Alternative (Gammastep)
     exec gammastep -l 47.47:-122.27 -t 6500:3500
-    
-    ### Custom Wallpaper Daemon Auto-Start
-    exec systemd-cat -t wallpaper-changer /etc/sway/wallpaper-changer.pl
 
-    ### Ensure stylesheet symlink is in place and launch nwg-dock
-    # exec bash -c 'mkdir -p ~/.config/nwg-dock && ln -sf ${nwgDockStyle} ~/.config/nwg-dock/style.css'
-    ### FIXME above... not the nix way
-    # exec nwg-dock -p bottom -mb 10 -i 48 -o DP-2
+    ### Custom Wallpaper Daemon Auto-Start
+    exec systemd-cat -t wallpaper-changer ${wallpaperChanger}
+
+    ### nwg-dock. The stylesheet is baked into the wrapper in
+    ### wm-common.nix, so no symlink into ~/.config is needed.
+    exec nwg-dock -p bottom -mb 10 -i 48 -o DP-2
 
     ### Key bindings
     bindsym Control+$mod+1 move scratchpad; scratchpad show
@@ -161,8 +97,8 @@ in
     bindsym Control+$mod+Shift+Tab workspace prev
 
     # cwm Window Management Shortcuts:
-    bindsym $mod+w exec /etc/sway/sway-window-switcher.py
-    bindsym Mod1+w exec /etc/sway/sway-window-switcher.py
+    bindsym $mod+w exec ${swayWindowSwitcher}
+    bindsym Mod1+w exec ${swayWindowSwitcher}
     bindsym Control+$mod+h move scratchpad
     bindsym $mod+u scratchpad show
     bindsym $mod+m fullscreen toggle
@@ -276,7 +212,11 @@ in
     # Status Bar:
     bar {
         position top
-        status_command /etc/sway/status.sh
+        status_command ${lib.getExe' wm.statusBar "wm-status"} --watch
+
+        # The status line emits pango markup so its segments are
+        # coloured; the same script backs the Hyprland bar.
+        pango_markup enabled
 
         colors {
             statusline #ffffff
@@ -286,20 +226,8 @@ in
     }
   '';
 
-  environment.etc."sway/sway-window-switcher.py" = {
-    source = ./sway-window-switcher.py;
-    mode = "0755";
-  };
-
-  environment.etc."sway/wallpaper-changer.pl" = {
-    source = ./wallpaper-changer.pl;
-    mode = "0755";
-  };
-
-  environment.etc."sway/status.sh" = {
-    source = ./sway-status-bar.sh;
-    mode = "0755";
-  };
+  # The window switcher, wallpaper daemon and status line are all
+  # referenced from the store above, so no scripts are written to /etc.
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";

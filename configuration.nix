@@ -7,6 +7,7 @@
     ./editor.nix
     ./shell.nix
     ./ghostty.nix
+    ./wm-common.nix
     ./sway.nix
     ./hyprland.nix
     ./tinywl.nix
@@ -104,6 +105,7 @@
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
     # HABAMAX-ALIGNED PALETTE
+    # Kept in step with wayland.colors in wm-common.nix.
     colors = [
       "1c1c1c" # Color 0:  Black          (habamax color00 - dark bg)
       "af5f5f" # Color 1:  Red            (habamax color01 - muted brick red)
