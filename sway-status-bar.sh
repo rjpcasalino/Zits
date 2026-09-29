@@ -99,7 +99,7 @@ while true; do
     # 7. UPTIME & DATE
     # -------------------------------------------------------------------------
     UPTIME=$(awk '{m=int($1/60); h=int(m/60); d=int(h/24); printf "%sd %sh %sm\n", d, h%24, m%60}' /proc/uptime | sed 's/^0d //;s/^0h //')
-    DATE=$(date +'%Y-%m-%d %H:%M:%S')
+    DATE=$(date +'%a %Y-%m-%d %H:%M:%S')
 
     # -------------------------------------------------------------------------
     # OUTPUT FORMAT

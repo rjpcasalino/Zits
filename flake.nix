@@ -17,6 +17,7 @@
     #  url = "github:ghostty-org/ghostty";
     # };
     # add to putputs if you want it ^; using foot for now and xterm otherwise
+    llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
   outputs = { self, nixpkgs, sops-nix, determinate, ... }@inputs: {

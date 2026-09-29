@@ -8,6 +8,7 @@
     ./shell.nix
     ./ghostty.nix
     ./sway.nix
+    ./hyprland.nix
     ./tinywl.nix
     ./foot.nix
   ];
@@ -149,11 +150,10 @@
   services.ollama = {
     enable = true;
     package = pkgs.ollama-rocm;
-    rocmOverrideGfx = "11.0.1";
+    rocmOverrideGfx = "11.0.0";
     environmentVariables = {
       OLLAMA_DEBUG = "1";
       OLLAMA_HOST = "0.0.0.0";
-      HSA_OVERRIDE_GFX_VERSION = "11.0.0";
       HCC_AMDGPU_TARGET = "gfx1100";
     };
   };
@@ -453,6 +453,8 @@
     cmake
     # https://github.com/nix-community/colmena
     colmena
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop
     direnv
     dust
     ed
@@ -468,7 +470,7 @@
     grpcui
     lact
     libreoffice
-    (makemkv.override { ffmpeg_8 = ffmpeg_6; }) # WARNING: broken in ffmpeg_7. File issue in nixpkgs for maintainer.
+    #makemkv # WARNING got 525 SSL Handshake failed...
     nixpkgs-fmt
     nixpkgs-review
     pamixer
@@ -500,6 +502,8 @@
     libbluray
     mons
     mpv-unwrapped # see overlays
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode-desktop
     overskride
     polybar
     p11-kit
