@@ -165,12 +165,17 @@ panel_net() {
       if [ -n "${pnow:-}" ] && [ "${now}" -gt "${pnow}" ] 2>/dev/null; then
         local dt=$((now - pnow))
         [ "$dt" -gt 0 ] || dt=1
+        # rx_bytes/tx_bytes are bytes, so the delta over dt is bytes per
+        # second. human_kib formats KiB, and is shared with the memory
+        # panel where the input really is KiB, so convert here: divide by
+        # dt * 1024 to get KiB/s. Same arithmetic as status-line.sh, which
+        # divides by POLL_INTERVAL * 1024.
         printf '    %s  %s\n' \
           "$(span "$WM_C_DIM" 'recv')" \
-          "$(span "$WM_C_GREEN" "$(human_kib $(((rx - prx) / dt)))/s")"
+          "$(span "$WM_C_GREEN" "$(human_kib $(((rx - prx) / (dt * 1024))))/s")"
         printf '    %s  %s\n' \
           "$(span "$WM_C_DIM" 'send')" \
-          "$(span "$WM_C_BLUE" "$(human_kib $(((tx - ptx) / dt)))/s")"
+          "$(span "$WM_C_BLUE" "$(human_kib $(((tx - ptx) / (dt * 1024))))/s")"
         total=1
       fi
     fi

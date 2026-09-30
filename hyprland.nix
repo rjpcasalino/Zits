@@ -58,6 +58,12 @@ in
     # absolute store paths, so they do not depend on this PATH at all.
     path = [ pkgs.waybar ] ++ wm.statusRuntimeDeps;
     unitConfig.ConditionEnvironment = "WAYLAND_DISPLAY";
+    # StartLimitIntervalSec is a [Unit] directive, not a [Service] one, so it
+    # cannot live in serviceConfig below: systemd would log "Unknown key
+    # StartLimitIntervalSec in section Service" and quietly ignore it, leaving
+    # the default burst 5 / 10s limit in force. The dedicated NixOS option puts
+    # it in [Unit] where it counts.
+    startLimitIntervalSec = 0;
     serviceConfig = {
       # XDG_CONFIG_DIRS in the user manager already contains /etc/xdg,
       # but pass the paths explicitly so the bar cannot silently fall
@@ -67,13 +73,12 @@ in
       # The session target is started from the compositor's own
       # "hyprland.start" event, which can fire before the user manager
       # has been told which display this session is on. That produced
-      # "cannot open display: " and, with the default burst limit, five
-      # retries inside ten seconds all failed and the unit latched into
-      # start-limit-hit for the rest of the login. Keep retrying slowly
-      # and forever instead: a missing bar is worth more than a busy
-      # loop, and the rate limit is what turned a hiccup into no bar.
+      # "cannot open display: ", and with the default burst limit the
+      # retries all landed inside ten seconds and the unit latched into
+      # start-limit-hit for the rest of the login. The import added in
+      # hyprland.lua removes the cause; a one-second retry keeps a bar
+      # that dies later, since a missing bar costs more than a slow retry.
       RestartSec = "1s";
-      StartLimitIntervalSec = "0";
     };
   };
 
@@ -465,7 +470,7 @@ in
         "custom/status-mem",
         "custom/status-vol"
       ],
-      "modules-right": ["tray", "custom/status-time"],
+      "modules-right": ["tray", "clock"],
 
       "hyprland/workspaces": {
         "format": "{icon}",
@@ -521,11 +526,24 @@ in
         "on-scroll-down": "${wpctlBin} set-volume @DEFAULT_AUDIO_SINK@ 5%-"
       },
 
-      "custom/status-time": {
-        "exec": "${statusBar} --once --section time",
-        "interval": 2,
-        "restart-interval": 5,
-        "max-length": 80,
+      // Native clock, not a custom module running wm-status. Comments here must
+  // use // : this is emitted into a .jsonc that waybar parses as JSONC, and
+  // a # line is a hard parse error that would take the whole bar down.
+  //
+  // A custom module is respawned by a plain periodic timer, and that timer
+  // is not phase-locked to wall-clock seconds, so it drifts and periodically
+  // lands after the boundary it should have hit: measured at roughly one
+  // whole second per minute with no update at all, which is the visible
+  // skip. It also cost ~306ms per poll, spawned once per monitor, so about
+  // 0.6s of CPU per second just to draw a clock.
+  //
+  // The built-in clock sleeps to the next interval boundary
+  // (now % interval), so it wakes exactly on the second and cannot skip
+  // or repeat, and it formats in-process with no subprocess at all.
+  "clock": {
+        "interval": 1,
+        "format": "<span>{:%a %d %b %Y  %I:%M:%S %p}</span>",
+        "tooltip-format": "<big>{}</big>",
         "on-click": "${panel} --section time"
       },
 
