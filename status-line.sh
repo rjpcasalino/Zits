@@ -31,7 +31,7 @@ set -uo pipefail
 : "${WM_C_RED:=#af5f5f}"
 : "${WM_C_MAGENTA:=#af87af}"
 
-readonly POLL_INTERVAL=1
+readonly POLL_INTERVAL=2
 readonly PUB_IP_MAX_AGE=60
 
 STATE_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/wm-status"
