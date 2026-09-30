@@ -15,6 +15,14 @@ let
 
   swayWindowSwitcher = installScript "sway-window-switcher" ./sway-window-switcher.py;
   wallpaperChanger = wm.wallpaperChanger;
+
+  # installScript builds a runCommand whose output is a *directory* holding
+  # bin/<name>, so interpolating the derivation yields $out and not the
+  # executable. Exec'ing $out fails - systemd-cat cannot run a directory, and
+  # the wallpaper daemon never starts. Resolve the binary instead. The name
+  # has to be passed explicitly: getExe' cannot infer it for a runCommand.
+  swayWindowSwitcherBin = lib.getExe' swayWindowSwitcher "sway-window-switcher";
+  wallpaperChangerBin = lib.getExe' wallpaperChanger "wallpaper-changer";
 in
 
 {
@@ -68,7 +76,7 @@ in
     exec gammastep -l 47.47:-122.27 -t 6500:3500
 
     ### Custom Wallpaper Daemon Auto-Start
-    exec systemd-cat -t wallpaper-changer ${wallpaperChanger}
+    exec systemd-cat -t wallpaper-changer ${wallpaperChangerBin}
 
     ### nwg-dock. The stylesheet is baked into the wrapper in
     ### wm-common.nix, so no symlink into ~/.config is needed.
@@ -97,8 +105,8 @@ in
     bindsym Control+$mod+Shift+Tab workspace prev
 
     # cwm Window Management Shortcuts:
-    bindsym $mod+w exec ${swayWindowSwitcher}
-    bindsym Mod1+w exec ${swayWindowSwitcher}
+    bindsym $mod+w exec ${swayWindowSwitcherBin}
+    bindsym Mod1+w exec ${swayWindowSwitcherBin}
     bindsym Control+$mod+h move scratchpad
     bindsym $mod+u scratchpad show
     bindsym $mod+m fullscreen toggle
