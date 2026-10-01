@@ -27,15 +27,51 @@ let
     theme=$(sed -n 's/^gtk-cursor-theme-name *= *//p' "$ini" | head -1)
     theme=$(printf '%s' "$theme" | sed 's/^"//; s/"$//' | tr -d '\r')
     [ -n "$theme" ] || exit 0
+
+    # A theme whose cursors/ directory exists but is empty is the one case
+    # that has to be passed through: Hyprland finds no shapes in it and
+    # falls back to its own blue cursor, which is what "reset" wants. The
+    # existence check below would otherwise discard it. Note this is
+    # different from a name with no directory at all, which makes Hyprland
+    # load the standard X11 pointer instead.
     dirs=$(printf '%s\n' "''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" "$HOME/.local/share" "$HOME/.icons" | tr ':\n' '  ')
     found=0
+    empty=0
     for dir in $dirs; do
-      [ -d "$dir/icons/$theme/cursors" ] && found=1 && break
+      if [ -d "$dir/icons/$theme/cursors" ]; then
+        found=1
+        [ -z "$(ls -A "$dir/icons/$theme/cursors" 2>/dev/null)" ] && empty=1
+        break
+      fi
     done
     [ "$found" -eq 1 ] || exit 0
     size=$(sed -n 's/^gtk-cursor-theme-size *= *//p' "$ini" | head -1 | tr -cd 0-9)
     [ -n "$size" ] || size=24
     hyprctl setcursor "$theme" "$size" || true
+  '';
+
+  # SUPER+C: go back to the blue Hyprland cursor from any themed one.
+  # Writes the sentinel theme name into every file GTK reads, because
+  # Hyprland's syncGsettings re-applies gtk-3.0/settings.ini and would
+  # otherwise undo the setcursor on the next reload.
+  resetCursor = pkgs.writeShellScript "reset-cursor-to-hyprland" ''
+    blank=blank-theme
+    for f in "''${XDG_CONFIG_HOME:-$HOME/.config}/gtk-3.0/settings.ini" \
+             "''${XDG_CONFIG_HOME:-$HOME/.config}/gtk-4.0/settings.ini" \
+             "$HOME/.gtkrc-2.0"; do
+      mkdir -p "$(dirname "$f")"
+      if [ -f "$f" ] && grep -q "^gtk-cursor-theme-name" "$f"; then
+        sed -i "s|^gtk-cursor-theme-name.*|gtk-cursor-theme-name=$blank|" "$f"
+      else
+        printf '[Settings]\ngtk-cursor-theme-name=%s\n' "$blank" >> "$f"
+      fi
+    done
+    # The stub has to exist with an empty cursors/ dir, else Hyprland loads
+    # the standard X11 pointer rather than its own fallback. Created in both
+    # locations libXcursor scans because which one it consults depends on
+    # XDG_DATA_HOME, and creating an extra empty dir costs nothing.
+    mkdir -p "$HOME/.icons/$blank/cursors" "$HOME/.local/share/icons/$blank/cursors"
+    hyprctl setcursor "$blank" 24 || true
   '';
 in
 {
@@ -338,6 +374,13 @@ in
       -- and pushing it here is what makes the cursor change everywhere
       -- instead of only inside GTK windows.
       hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("nwg-look; ${pushCursor}"))
+
+      -- Back to the stock blue Hyprland cursor from any themed one. Pairs
+      -- with SUPER+A: pick a theme there, press this to undo it. A dedicated
+      -- key rather than a toggle because the two directions are not
+      -- symmetric - there is no theme that is "the macOS cursor" to toggle
+      -- back to, only whichever was last chosen.
+      hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("${resetCursor}"))
 
     -- Workspaces. 10 is on the 0 key, same as before.
     for i = 1, 10 do
