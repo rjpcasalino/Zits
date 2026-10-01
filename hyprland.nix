@@ -16,6 +16,27 @@ let
   # This machine is on systemd-networkd + iwd, not NetworkManager, so
   # nmcli and nmtui do not exist here. networkctl is the equivalent.
   networkctlBin = lib.getExe' pkgs.systemd "networkctl";
+
+  # Small helper so SUPER+A can sync the compositor cursor to whatever
+  # nwg-look just wrote into gtk-3.0/settings.ini. Setcursor still needs
+  # the theme name as it appears in share/icons/<name>/cursors, so we must
+  # read back from that file and call hyprctl setcursor (FAQ step 2).
+  pushCursor = pkgs.writeShellScript "push-cursor-from-gtk" ''
+    ini="''${XDG_CONFIG_HOME:-$HOME/.config}/gtk-3.0/settings.ini"
+    [ -r "$ini" ] || exit 0
+    theme=$(sed -n 's/^gtk-cursor-theme-name *= *//p' "$ini" | head -1)
+    theme=$(printf '%s' "$theme" | sed 's/^"//; s/"$//' | tr -d '\r')
+    [ -n "$theme" ] || exit 0
+    dirs=$(printf '%s\n' "''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" "$HOME/.local/share" "$HOME/.icons" | tr ':\n' '  ')
+    found=0
+    for dir in $dirs; do
+      [ -d "$dir/icons/$theme/cursors" ] && found=1 && break
+    done
+    [ "$found" -eq 1 ] || exit 0
+    size=$(sed -n 's/^gtk-cursor-theme-size *= *//p' "$ini" | head -1 | tr -cd 0-9)
+    [ -n "$size" ] || size=24
+    hyprctl setcursor "$theme" "$size" || true
+  '';
 in
 {
   programs.hyprland = {
@@ -189,6 +210,14 @@ in
     local menu     = "wofi --show drun"
     local mainMod  = "SUPER"
 
+    -- Cursor. Left at the stock Hyprland cursor (theme "default"): the FAQ's
+    -- XCURSOR_THEME/HYPRCURSOR_THEME knobs are deliberately not set, so the
+    -- OG cursor is what you get. HYPRCURSOR_SIZE covers the compositor;
+    -- XCURSOR_SIZE is what Qt and XWayland apps read, since Hyprland only
+    -- exports a default of 24 for those itself.
+    hl.env("HYPRCURSOR_SIZE", "24")
+    hl.env("XCURSOR_SIZE", "24")
+
 
     -------------------
     ---- LOOK AND FEEL --
@@ -288,6 +317,15 @@ in
     hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd(terminal .. " -e ${networkctlBin} status"))
 
     hl.bind(mainMod .. " + CTRL + B",      hl.dsp.exec_cmd(terminal .. " -e bluetoothctl"))
+
+      -- Appearance: cursor, icon theme, GTK theme, fonts. nwg-look is the
+      -- editor the FAQ recommends. It writes gtk-cursor-theme-name to
+      -- ~/.config/gtk-3.0/settings.ini, which covers GTK apps but NOT the
+      -- compositor - Hyprland loads its own cursor from share/icons, so
+      -- the FAQ's second step is hyprctl setcursor. Reading the setting back
+      -- and pushing it here is what makes the cursor change everywhere
+      -- instead of only inside GTK windows.
+      hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("nwg-look; ${pushCursor}"))
 
     -- Workspaces. 10 is on the 0 key, same as before.
     for i = 1, 10 do

@@ -486,6 +486,8 @@
     usbutils
     wget
     xdg-utils
+    # nwg-look is the GTK settings editor the Hyprland FAQ recommends.
+    nwg-look
     libXft
     xev
     xmodmap
