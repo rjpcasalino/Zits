@@ -52,12 +52,19 @@ let
       export XDG_RUNTIME_DIR="$TMPDIR/wm-status-check"
       mkdir -p "$XDG_RUNTIME_DIR"
 
+      # Group the invocations so their stderr is piped into the filter. As
+      # separate statements the invocations write straight into the command
+      # substitution and grep read the build's stdin instead, so it matched
+      # nothing and $missing held the entire unfiltered stderr of every run
+      # - which trips this guard on any stderr at all, not just a missing
+      # dependency, and reports it as "missing runtime dependencies".
       missing=$(
-        for section in net disk cpu mem vol time; do
-          $out/bin/wm-status --once --section "$section" 2>&1 >/dev/null || true
-        done
-        $out/bin/wm-status --once 2>&1 >/dev/null || true
-        grep -oE '[A-Za-z0-9_.-]+: command not found' || true
+        {
+          for section in net disk cpu mem vol time; do
+            $out/bin/wm-status --once --section "$section" 2>&1 >/dev/null || true
+          done
+          $out/bin/wm-status --once 2>&1 >/dev/null || true
+        } | grep -oE '[A-Za-z0-9_.-]+: command not found' || true
       )
 
       if [ -n "$missing" ]; then
