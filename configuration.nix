@@ -488,6 +488,16 @@
     xdg-utils
     # nwg-look is the GTK settings editor the Hyprland FAQ recommends.
     nwg-look
+
+    # Cursor themes. Being in systemPackages is what makes these visible:
+    # nwg-look and Hyprland both scan XDG_DATA_DIRS, which already contains
+    # /run/current-system/sw/share, so no symlinking is needed. Without at
+    # least one, the cursor list in nwg-look only offers Adwaita and there
+    # is nothing to switch back to the stock cursor from.
+    apple-cursor           # macOS, and macOS-White
+    bibata-cursors         # Bibata, material-style, has many variants
+    breeze-hacked-cursor-theme # closest to a Windows 11 look
+    catppuccin-cursors
     libXft
     xev
     xmodmap
