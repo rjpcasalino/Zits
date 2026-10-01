@@ -210,13 +210,25 @@ in
     local menu     = "wofi --show drun"
     local mainMod  = "SUPER"
 
-    -- Cursor. Left at the stock Hyprland cursor (theme "default"): the FAQ's
-    -- XCURSOR_THEME/HYPRCURSOR_THEME knobs are deliberately not set, so the
-    -- OG cursor is what you get. HYPRCURSOR_SIZE covers the compositor;
-    -- XCURSOR_SIZE is what Qt and XWayland apps read, since Hyprland only
-    -- exports a default of 24 for those itself.
+    -- Cursor. HYPRCURSOR_SIZE covers the compositor; XCURSOR_SIZE is what Qt and
+    -- XWayland apps read, since Hyprland only exports a default of 24 for
+    -- those itself.
+    --
+    -- XCURSOR_THEME points at a deliberately unresolvable theme name. There
+    -- is no such theme on disk, so CXCursorManager::loadTheme finds no
+    -- cursor shapes and falls back to m_hyprCursor, which is the blue
+    -- Hyprland arrow. This is how the stock cursor is obtained: it is the
+    -- failure path in XCursorManager.cpp, not a selectable theme. Note that
+    -- an *existing* name will not do it - naming a real theme loads that
+    -- theme, and the name "default" resolves through the index.theme
+    -- inheritance chain to Adwaita, so both leave you with a black/white
+    -- pointer instead.
+    --
+    -- The name must match ~/.config/gtk-3.0/settings.ini, or GTK's
+    -- syncGsettings re-applies the stored value and overwrites this.
     hl.env("HYPRCURSOR_SIZE", "24")
     hl.env("XCURSOR_SIZE", "24")
+    hl.env("XCURSOR_THEME", "blank-theme")
 
 
     -------------------
