@@ -250,22 +250,34 @@ in
     -- XWayland apps read, since Hyprland only exports a default of 24 for
     -- those itself.
     --
-    -- XCURSOR_THEME points at a deliberately unresolvable theme name. There
-    -- is no such theme on disk, so CXCursorManager::loadTheme finds no
-    -- cursor shapes and falls back to m_hyprCursor, which is the blue
-    -- Hyprland arrow. This is how the stock cursor is obtained: it is the
-    -- failure path in XCursorManager.cpp, not a selectable theme. Note that
-    -- an *existing* name will not do it - naming a real theme loads that
-    -- theme, and the name "default" resolves through the index.theme
-    -- inheritance chain to Adwaita, so both leave you with a black/white
-    -- pointer instead.
+    -- XCURSOR_THEME is deliberately NOT set. It was pinned to "blank-theme"
+    -- to get the blue cursor, which worked but broke persistence: Hyprland
+    -- reads the env var at startup, before anything consults
+    -- gtk-3.0/settings.ini, so a cursor chosen in nwg-look was discarded on
+    -- the next boot. The GTK files are now the single source of truth and
+    -- the startup block pushes them into the compositor, so a reboot keeps
+    -- whatever you picked.
     --
-    -- The name must match ~/.config/gtk-3.0/settings.ini, or GTK's
-    -- syncGsettings re-applies the stored value and overwrites this.
+    -- For the blue Hyprland arrow the GTK files hold "blank-theme", a theme
+    -- whose cursors/ dir exists but is empty. That distinction is the whole
+    -- trick (XCursorManager.cpp): an existing-but-empty dir makes loadTheme
+    -- find no shapes and fall back to m_hyprCursor, whereas a name with no
+    -- directory at all makes it load the standard X11 pointer. pushCursor
+    -- passes that sentinel through rather than discarding it.
     hl.env("HYPRCURSOR_SIZE", "24")
     hl.env("XCURSOR_SIZE", "24")
-    hl.env("XCURSOR_THEME", "blank-theme")
 
+    -- XCURSOR_THEME is deliberately NOT pinned to blank-theme here. It used
+    -- to be, which made the blue cursor work but overrode the persisted GTK
+    -- setting on every boot: Hyprland reads the env var at startup, before
+    -- anything consults gtk-3.0/settings.ini, so a macOS pick made in
+    -- nwg-look was silently discarded on the next reboot. Instead the GTK
+    -- files are the single source of truth and are pushed into the
+    -- compositor once at startup, below. Those files also hold
+    -- "blank-theme" when the blue fallback is wanted, and pushCursor passes
+    -- that sentinel through, so blue still persists across reboots - it
+    -- just comes from the same place the macOS choice does.
+    
 
     -------------------
     ---- LOOK AND FEEL --
@@ -438,6 +450,14 @@ in
         -- client so the same daemon and script serve both compositors, and
         -- the rotation stays in lockstep. The script starts awww-daemon.
         hl.exec_cmd("systemd-cat -t wallpaper-changer wallpaper-changer")
+
+        -- Cursor, so the choice survives a reboot. The compositor reads
+        -- XCURSOR_THEME at startup and no other env var is consulted
+        -- afterwards, so a theme picked in nwg-look is otherwise lost the
+        -- next login even though the GTK files still record it. pushCursor
+        -- re-applies whatever gtk-3.0/settings.ini says, which is either a
+        -- real theme or the blank-theme sentinel for the blue arrow.
+        hl.exec_cmd("${pushCursor}")
     end)
   '';
 
