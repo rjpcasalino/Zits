@@ -90,20 +90,29 @@
               autocmd BufEnter *.txt,*.tex set background=light
               autocmd BufEnter *.txt,*.tex highlight Normal     ctermbg=231 ctermfg=235 guibg=#FFFFFF guifg=#1c1c1c
               autocmd BufEnter *.txt,*.tex highlight NonText    ctermbg=231 ctermfg=235 guibg=#FFFFFF guifg=#1c1c1c
+              autocmd BufEnter *.txt,*.tex highlight Cursor     ctermfg=231 ctermbg=196 guifg=#FFFFFF guibg=#FF0000
+              autocmd BufEnter *.txt,*.tex highlight CursorLine cterm=NONE ctermbg=254 guibg=#e4e4e4
+
               autocmd BufEnter *.txt,*.tex set syntax=off
               autocmd BufEnter *.txt,*.tex set spell!
+              autocmd BufEnter *.txt,*.tex set cursorline
+              autocmd BufEnter *.txt,*.tex set guicursor=a:block-Cursor
 
-              autocmd BufEnter *.txt,*.tex let &t_EI = "\<Esc>]12;black\x7"
-              autocmd BufEnter *.txt,*.tex let &t_SI = "\<Esc>]12;black\x7"
-              autocmd BufEnter *.txt,*.tex let &t_SR = "\<Esc>]12;black\x7"
+              autocmd BufEnter *.txt,*.tex let &t_EI = "\<Esc>]12;#FF0000\x7"
+              autocmd BufEnter *.txt,*.tex let &t_SI = "\<Esc>]12;#FF0000\x7"
+              autocmd BufEnter *.txt,*.tex let &t_SR = "\<Esc>]12;#FF0000\x7"
               autocmd BufEnter *.txt,*.tex silent! execute "normal! \<Esc>"
 
               autocmd BufLeave *.txt,*.tex set background=dark
+              autocmd BufLeave *.txt,*.tex set nocursorline
+              autocmd BufLeave *.txt,*.tex set guicursor=
+              autocmd BufLeave *.txt,*.tex highlight clear CursorLine
               autocmd BufLeave *.txt,*.tex highlight Normal ctermbg=NONE ctermfg=NONE guibg=NONE guifg=NONE
               autocmd BufLeave *.txt,*.tex highlight NonText ctermbg=NONE ctermfg=NONE guibg=NONE guifg=NONE
 
               autocmd BufLeave *.txt,*.tex silent! execute "normal! \<Esc>"
           augroup END
+
 
           autocmd VimLeave * silent !echo -ne "\033]112\007"
 

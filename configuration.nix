@@ -7,7 +7,9 @@
     ./editor.nix
     ./shell.nix
     ./ghostty.nix
+    ./wm-common.nix
     ./sway.nix
+    ./hyprland.nix
     ./tinywl.nix
     ./foot.nix
   ];
@@ -103,6 +105,7 @@
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
     # HABAMAX-ALIGNED PALETTE
+    # Kept in step with wayland.colors in wm-common.nix.
     colors = [
       "1c1c1c" # Color 0:  Black          (habamax color00 - dark bg)
       "af5f5f" # Color 1:  Red            (habamax color01 - muted brick red)
@@ -149,11 +152,10 @@
   services.ollama = {
     enable = true;
     package = pkgs.ollama-rocm;
-    rocmOverrideGfx = "11.0.1";
+    rocmOverrideGfx = "11.0.0";
     environmentVariables = {
       OLLAMA_DEBUG = "1";
       OLLAMA_HOST = "0.0.0.0";
-      HSA_OVERRIDE_GFX_VERSION = "11.0.0";
       HCC_AMDGPU_TARGET = "gfx1100";
     };
   };
@@ -453,6 +455,8 @@
     cmake
     # https://github.com/nix-community/colmena
     colmena
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop
     direnv
     dust
     ed
@@ -468,7 +472,7 @@
     grpcui
     lact
     libreoffice
-    (makemkv.override { ffmpeg_8 = ffmpeg_6; }) # WARNING: broken in ffmpeg_7. File issue in nixpkgs for maintainer.
+    #makemkv # WARNING got 525 SSL Handshake failed...
     nixpkgs-fmt
     nixpkgs-review
     pamixer
@@ -482,6 +486,18 @@
     usbutils
     wget
     xdg-utils
+    # nwg-look is the GTK settings editor the Hyprland FAQ recommends.
+    nwg-look
+
+    # Cursor themes. Being in systemPackages is what makes these visible:
+    # nwg-look and Hyprland both scan XDG_DATA_DIRS, which already contains
+    # /run/current-system/sw/share, so no symlinking is needed. Without at
+    # least one, the cursor list in nwg-look only offers Adwaita and there
+    # is nothing to switch back to the stock cursor from.
+    apple-cursor           # macOS, and macOS-White
+    bibata-cursors         # Bibata, material-style, has many variants
+    breeze-hacked-cursor-theme # closest to a Windows 11 look
+    catppuccin-cursors
     libXft
     xev
     xmodmap
@@ -500,6 +516,8 @@
     libbluray
     mons
     mpv-unwrapped # see overlays
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode-desktop
     overskride
     polybar
     p11-kit

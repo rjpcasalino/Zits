@@ -1,60 +1,28 @@
-{ config, pkgs, inputs, ... }: # inputs passed for flakes
+{ config, pkgs, lib, inputs, ... }:
 
 let
-  wofiStyle = pkgs.writeText "wofi-style.css" ''
-      window {
-        margin: 0px;
-        padding: 0px;
-        opacity: 0.9;
-        border: 2px solid #99e1d0;
-        background-color: rgba(234, 253, 240, 0.9);
-        border-radius: 0 10px 10px 0;
-    }
+  wm = config.wayland;
 
-    #input {
-        margin: 5px;
-        border: none;
-        color: #000000;
-        background-color: #fdba00;
-    }
-
-    #inner-box {
-        margin: 5px;
-        border: none;
-        background-color: #eafdf0;
-    }
-
-    #outer-box {
-        margin: 5px;
-        border: none;
-        background-color: #eafdf0;
-    }
-
-    #text {
-        margin: 5px;
-        border: none;
-        color: #000000;
-    }
-
-    #entry:selected {
-        background-color: #7897e8;
-        border-radius: 6px;
-    }
-
-    list {
-        background-color: #7897e8;
-        border-radius: 6px;
-    }
-  '';
-
-  customWofi = pkgs.symlinkJoin {
-    name = "wofi-custom";
-    paths = [ pkgs.wofi ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/wofi --add-flags "--style ${wofiStyle}"
+  # Copy a script out of the config tree into the store, executable,
+  # keeping whatever interpreter its shebang declares. Used instead of
+  # dropping files into /etc so the session always runs the version
+  # belonging to the current system closure.
+  installScript =
+    name: path:
+    pkgs.runCommand name { } ''
+      install -Dm755 ${path} $out/bin/${name}
     '';
-  };
+
+  swayWindowSwitcher = installScript "sway-window-switcher" ./sway-window-switcher.py;
+  wallpaperChanger = wm.wallpaperChanger;
+
+  # installScript builds a runCommand whose output is a *directory* holding
+  # bin/<name>, so interpolating the derivation yields $out and not the
+  # executable. Exec'ing $out fails - systemd-cat cannot run a directory, and
+  # the wallpaper daemon never starts. Resolve the binary instead. The name
+  # has to be passed explicitly: getExe' cannot infer it for a runCommand.
+  swayWindowSwitcherBin = lib.getExe' swayWindowSwitcher "sway-window-switcher";
+  wallpaperChangerBin = lib.getExe' wallpaperChanger "wallpaper-changer";
 in
 
 {
@@ -67,20 +35,16 @@ in
       swaylock
       swayidle
       swaybg
-      waybar
       wl-clipboard
       grim
       slurp
-      customWofi
       mako
       qt5.qtwayland
       qt6.qtwayland
-      gammastep # Redshift alternative for Wayland
-      mpvpaper # Interactive 4K video/GIF wallpaper for Wayland
-      awww # Animated GIF wallpaper engine with smooth transitions (formerly swww)
-      # flakes way below...
-      # inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
-    ];
+      gammastep
+      mpvpaper
+      awww
+    ] ++ [ wm.wofi wm.nwgDock wm.statusBar ] ++ wm.statusRuntimeDeps;
   };
 
   # Direct system /etc/sway/config to use /etc/nixos/sway.conf
@@ -88,7 +52,6 @@ in
     # Sway configuration file tracked in /etc/nixos/sway.conf
 
     ### Stop X11-only services like polybar on Wayland startup
-    # FIXME: doesn't work and polybar gets started
     exec systemctl --user stop polybar.service
     exec pkill polybar
 
@@ -101,41 +64,26 @@ in
     workspace 2 output HDMI-A-1
 
     ### Variables
-    # Logo key. Use Mod1 for Alt.
     set $mod Mod4
-    # Home row direction keys, like vim
     set $left h
     set $down j
     set $up k
     set $right l
-    # Your preferred terminal emulator
     set $term foot
-    # Your preferred application launcher
     set $menu wofi --show drun
 
-    ### Output configuration
-    # Default static wallpaper (disabled)
-    # output * bg /run/current-system/sw/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
-
     ### Night Light / Redshift Alternative (Gammastep)
-    # Automatic day/night temperature transition (replace with your lat:lon):
     exec gammastep -l 47.47:-122.27 -t 6500:3500
-    # Manual fixed color temperature:
-    # exec gammastep -O 4000
-    #
-    #
+
     ### Custom Wallpaper Daemon Auto-Start
-    exec systemd-cat -t wallpaper-changer /etc/sway/wallpaper-changer.pl
+    exec systemd-cat -t wallpaper-changer ${wallpaperChangerBin}
+
+    ### nwg-dock. The stylesheet is baked into the wrapper in
+    ### wm-common.nix, so no symlink into ~/.config is needed.
+    exec nwg-dock -p bottom -mb 10 -i 48 -o DP-2
 
     ### Key bindings
-    #
-    # FIXME: mostly slop to get close to something like cwm in sway and it sucks but sorta works
-    # sway is not cwm so why force it to be? but alas old window managers die hard
-    #
-    # Basics:
-    # cwm-style hide/show window toggle (reveals wallpaper on press, restores window on re-press)
     bindsym Control+$mod+1 move scratchpad; scratchpad show
-    # snap/fill workspace container without overlapping the bar
     bindsym $mod+Shift+equal floating disable
     bindsym $mod+Shift+plus floating disable
     bindsym $mod+Return exec $term
@@ -157,8 +105,8 @@ in
     bindsym Control+$mod+Shift+Tab workspace prev
 
     # cwm Window Management Shortcuts:
-    bindsym $mod+w exec /etc/sway/sway-window-switcher.py
-    bindsym Mod1+w exec /etc/sway/sway-window-switcher.py
+    bindsym $mod+w exec ${swayWindowSwitcherBin}
+    bindsym Mod1+w exec ${swayWindowSwitcherBin}
     bindsym Control+$mod+h move scratchpad
     bindsym $mod+u scratchpad show
     bindsym $mod+m fullscreen toggle
@@ -198,7 +146,6 @@ in
     bindsym $mod+Shift+1 move container to workspace number 1
     bindsym $mod+Shift+2 move container to workspace number 2
     bindsym $mod+Shift+3 move container to workspace number 3
-    #bindsym $mod+Shift+4 move container to workspace number 4 # overwritten by screengrab macOS type binding
     bindsym $mod+Shift+5 move container to workspace number 5
     bindsym $mod+Shift+6 move container to workspace number 6
     bindsym $mod+Shift+7 move container to workspace number 7
@@ -251,11 +198,6 @@ in
     bindsym --locked XF86AudioLowerVolume exec wpctl set-volume \@DEFAULT_AUDIO_SINK@ 5%-
     bindsym --locked XF86AudioRaiseVolume exec wpctl set-volume \@DEFAULT_AUDIO_SINK@ 5%+
 
-    # CWM way...
-    #bind-key XF86AudioMute "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-    #bind-key XF86AudioLowerVolume "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-    #bind-key XF86AudioRaiseVolume "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"
-
     bindsym --locked XF86AudioPlay exec playerctl play-pause
     bindsym --locked XF86AudioPause exec playerctl play-pause
     bindsym --locked XF86AudioPrev exec playerctl previous
@@ -268,7 +210,7 @@ in
     bindsym $mod+Shift+4 exec bash -c 'FILE=~/Pictures/Screenshot_$(date +%Y%m%d_%H%M%S).png; grim -g "$(slurp)" "$FILE" && wl-copy < "$FILE"'
     bindsym Print exec bash -c 'FILE=~/Pictures/Screenshot_$(date +%Y%m%d_%H%M%S).png; grim -g "$(slurp)" "$FILE" && wl-copy < "$FILE"'
 
-    # swayidle setup with clean DPMS and unlock resume hooks
+    # swayidle setup
     exec swayidle -w \
         timeout 300 'swaylock -f -c 000000' \
         timeout 600 'swaymsg "output * dpms off"' \
@@ -278,7 +220,11 @@ in
     # Status Bar:
     bar {
         position top
-        status_command /etc/sway/status.sh
+        status_command ${lib.getExe' wm.statusBar "wm-status"} --watch
+
+        # The status line emits pango markup so its segments are
+        # coloured; the same script backs the Hyprland bar.
+        pango_markup enabled
 
         colors {
             statusline #ffffff
@@ -286,23 +232,12 @@ in
             inactive_workspace #32323200 #32323200 #5c5c5c
         }
     }
-
   '';
-  environment.etc."sway/sway-window-switcher.py" = {
-    source = ./sway-window-switcher.py;
-    mode = "0755";
-  };
-  environment.etc."sway/wallpaper-changer.pl" = {
-    source = ./wallpaper-changer.pl;
-    mode = "0755";
-  };
-  environment.etc."sway/status.sh" = {
-    source = ./sway-status-bar.sh;
-    mode = "0755";
-  };
 
-  
+  # The window switcher, wallpaper daemon and status line are all
+  # referenced from the store above, so no scripts are written to /etc.
+
   environment.sessionVariables = {
-    NIXOS_OZONE_WL = "1"; # Wayland support for Electron/Chromium apps
+    NIXOS_OZONE_WL = "1";
   };
 }
