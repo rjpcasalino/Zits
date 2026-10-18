@@ -37,7 +37,6 @@ readonly PUB_IP_MAX_AGE=60
 STATE_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/wm-status"
 PUB_IP_FILE="$STATE_DIR/pub_ip"
 PUB_IP_STAMP="$STATE_DIR/pub_ip_stamp"
-NET_FILE="$STATE_DIR/net_counters"
 
 # Escape data that is interpolated into pango markup. Without this a
 # mount point or interface name containing & or < would render as a
@@ -101,44 +100,14 @@ read_pub_ip() {
 # ---------------------------------------------------------------------
 collect() {
   # --- network ---
-  IFACE=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $5; exit}')
   IFACES_ACTIVE=$(ip -o -4 addr show 2>/dev/null |
     grep -v ' state DOWN' | awk '$2 != "lo" {print $2 ":" $4}' |
     cut -d'/' -f1 | tr '\n' ' ' | sed 's/ $//')
-  CONN_COUNT=$(ss -tua state established 2>/dev/null | tail -n +2 | wc -l)
 
   PUB=$(read_pub_ip)
 
   VPN=$(ip link show 2>/dev/null |
     grep -E 'wg|tun|mullvad|proton' | awk -F': ' '{print $2}' | head -n1)
-
-  # Bandwidth delta against the previous sample. The counters live in a
-  # file because --once consumers do not keep process state.
-  NET_SPEED=""
-  if [ -n "$IFACE" ] && [ -e "/sys/class/net/$IFACE/statistics/rx_bytes" ]; then
-    NOW_RX=$(cat "/sys/class/net/$IFACE/statistics/rx_bytes" 2>/dev/null)
-    NOW_TX=$(cat "/sys/class/net/$IFACE/statistics/tx_bytes" 2>/dev/null)
-    PREV_RX=0
-    PREV_TX=0
-    if [ -r "$NET_FILE" ]; then
-      read -r PREV_RX PREV_TX <"$NET_FILE" || :
-    fi
-    # Anything that is not a plain non-negative integer is treated as "no
-    # previous sample" rather than fed to $(( )). A stray value in this
-    # state file otherwise throws an arithmetic syntax error on every
-    # tick, and the bar is the one thing that must never be noisy.
-    case "${PREV_RX:-}" in '' | *[!0-9]*) PREV_RX=0 ;; esac
-    case "${PREV_TX:-}" in '' | *[!0-9]*) PREV_TX=0 ;; esac
-    case "${NOW_RX:-}" in '' | *[!0-9]*) NOW_RX=0 ;; esac
-    case "${NOW_TX:-}" in '' | *[!0-9]*) NOW_TX=0 ;; esac
-    if [ "$PREV_RX" -gt 0 ] 2>/dev/null && [ "$NOW_RX" -ge "$PREV_RX" ]; then
-      NET_SPEED=$(printf '⬇️ %sK ⬆️ %sK' \
-        "$(((NOW_RX - PREV_RX) / (POLL_INTERVAL * 1024)))" \
-        "$(((NOW_TX - PREV_TX) / (POLL_INTERVAL * 1024)))")
-    fi
-    mkdir -p "$STATE_DIR" 2>/dev/null
-    printf '%s %s' "${NOW_RX:-0}" "${NOW_TX:-0}" >"$NET_FILE" 2>/dev/null
-  fi
 
   # --- disk ---
   DISKS=$(df -h --output=target,pcent -x tmpfs -x devtmpfs -x squashfs \
@@ -250,8 +219,6 @@ render() {
 
 build_segments() {
   SEG_net=$'\U1F1FA\U1F1F8'" IF: [ $(span "$WM_C_CYAN" "$IFACES_ACTIVE") ]"
-  SEG_net+=" | CONN: $CONN_COUNT"
-  [ -n "$NET_SPEED" ] && SEG_net+="$(span "$WM_C_BLUE" " $NET_SPEED")"
   SEG_net+=" | PUB: $(span "$WM_C_FG" "$PUB")"
   [ -n "$VPN" ] && SEG_net+="$(span "$WM_C_MAGENTA" " | 🛡️ $VPN")"
 

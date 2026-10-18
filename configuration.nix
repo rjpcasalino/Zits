@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, lib, ... }:
+{ config, pkgs, inputs, ... }:
 
 
 {
@@ -64,16 +64,30 @@
   # specialArgs = { inherit inputs; }—dumb
   # registry.nixpkgs.flake = inputs.nixpkgs—ugh
   nix = {
-    settings.trusted-users = [ "root" "rjpc" ];
+    settings = {
+      trusted-users = [ "root" "rjpc" ];
+      auto-optimise-store = true;
+      show-trace = true;
+
+      # Public binary caches (cache.nixos.org is enabled by default by NixOS,
+      # and cache.flakehub.com is configured by the Determinate module).
+      extra-substituters = [
+        "https://cache.numtide.com"
+        "https://cache.thalheim.io"
+        "https://nix-community.cachix.org"
+      ];
+      extra-trusted-public-keys = [
+        "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+        "cache.thalheim.io-1:R7msbosLEZKrxk/lKxf9BTjOOH7Ax3H0Qj0/6wiHOgc="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+    };
     nixPath = [ "nixpkgs=flake:nixpkgs" ];
-    settings.auto-optimise-store = true;
-    # auto-allocate-uids started throwing warnings with recent update to Uakari
+    channel.enable = false;
+    registry.nixpkgs.flake = inputs.nixpkgs;
     extraOptions = ''
       experimental-features = nix-command flakes auto-allocate-uids wasm-builtin
     '';
-    channel.enable = false;
-    registry.nixpkgs.flake = inputs.nixpkgs;
-    settings.show-trace = true;
   };
   # #
 
@@ -200,13 +214,6 @@
     wheelNeedsPassword = false;
   };
   security.sudo.wheelNeedsPassword = false;
-  security.sudo.extraRules = [{
-  users = [ "rjpc" ];
-  commands = [{
-    command = "/usr/local/bin/toggle-net.sh";
-    options = [ "NOPASSWD" ];
-  }];
-}];
   # #
 
   # Anti-virus #
@@ -225,7 +232,7 @@
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
       liberation_ttf          # Drop-in replacement for Arial, Times New Roman, Courier
-      corefonts               # Microsoft fonts (Arial, Times, Verdana, etc.)
+      # corefonts               # Microsoft fonts (Arial, Times, Verdana, etc.)
       dejavu_fonts
       font-awesome            # Icon font widely used on web pages
       roboto
@@ -472,7 +479,8 @@
     grpcui
     lact
     libreoffice
-    #makemkv # WARNING got 525 SSL Handshake failed...
+    makemkv # WARNING got 525 SSL Handshake failed...
+    nixd
     nixpkgs-fmt
     nixpkgs-review
     pamixer
@@ -537,6 +545,7 @@
         ms-python.python
         ms-vscode.makefile-tools
         naumovs.color-highlight
+        jnoortheen.nix-ide
       ];
     })
     # wine

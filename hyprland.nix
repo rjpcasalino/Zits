@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, inputs, ... }:
 
 let
   wm = config.wayland;
@@ -17,15 +17,267 @@ let
   # nmcli and nmtui do not exist here. networkctl is the equivalent.
   networkctlBin = lib.getExe' pkgs.systemd "networkctl";
 
+  # Aggregate sources from inputs
+  hancoreThemes = inputs.waybar-themes;
+  macosThemes = inputs.waybar-macos;
+
+  # Default Waybar configuration and stylesheet.
+  #
+  # The status segments come from the same script that backs sway's
+  # bar, asked for one section at a time so that each segment can carry
+  # its own click and scroll handlers.
+  defaultConfigJson = ''
+    {
+      "layer": "top",
+      "position": "top",
+      "height": 28,
+      "spacing": 4,
+      "modules-left": ["hyprland/workspaces", "hyprland/window"],
+      "modules-center": [
+        "custom/status-net",
+        "custom/status-disk",
+        "custom/status-cpu",
+        "custom/status-mem",
+        "custom/status-vol"
+      ],
+      "modules-right": ["tray", "clock"],
+
+      "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+          "active": "●",
+          "default": "○"
+        }
+      },
+
+      "hyprland/window": {
+        "max-length": 60
+      },
+
+      "custom/status-net": {
+        "exec": "${statusBar} --once --section net",
+        "interval": 2,
+        "restart-interval": 5,
+        "max-length": 400,
+        "on-click": "${panel} --section net"
+      },
+
+      "custom/status-disk": {
+        "exec": "${statusBar} --once --section disk",
+        "interval": 5,
+        "restart-interval": 10,
+        "max-length": 120,
+        "on-click": "${panel} --section disk"
+      },
+
+      "custom/status-cpu": {
+        "exec": "${statusBar} --once --section cpu",
+        "interval": 2,
+        "restart-interval": 5,
+        "max-length": 80,
+        "on-click": "${panel} --section cpu"
+      },
+
+      "custom/status-mem": {
+        "exec": "${statusBar} --once --section mem",
+        "interval": 2,
+        "restart-interval": 5,
+        "max-length": 80,
+        "on-click": "${panel} --section mem"
+      },
+
+      "custom/status-vol": {
+        "exec": "${statusBar} --once --section vol",
+        "interval": 2,
+        "restart-interval": 5,
+        "max-length": 60,
+        "on-click": "${wpctlBin} set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-scroll-up": "${wpctlBin} set-volume @DEFAULT_AUDIO_SINK@ 5%+",
+        "on-scroll-down": "${wpctlBin} set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+      },
+
+      // Native clock, not a custom module running wm-status. Comments here must
+      // use // : this is emitted into a .jsonc that waybar parses as JSONC, and
+      // a # line is a hard parse error that would take the whole bar down.
+      //
+      // A custom module is respawned by a plain periodic timer, and that timer
+      // is not phase-locked to wall-clock seconds, so it drifts and periodically
+      // lands after the boundary it should have hit: measured at roughly one
+      // whole second per minute with no update at all, which is the visible
+      // skip. It also cost ~306ms per poll, spawned once per monitor, so about
+      // 0.6s of CPU per second just to draw a clock.
+      //
+      // The built-in clock sleeps to the next interval boundary
+      // (now % interval), so it wakes exactly on the second and cannot skip
+      // or repeat, and it formats in-process with no subprocess at all.
+      "clock": {
+        "interval": 1,
+        "format": "<span>{:%a %d %b %Y  %I:%M:%S %p}</span>",
+        "tooltip-format": "<big>{}</big>",
+        "on-click": "${panel} --section time"
+      },
+
+      "tray": {
+        "icon-size": 16,
+        "spacing": 8
+      }
+    }
+  '';
+
+  defaultStyleCss = ''
+    * {
+      /* Noto Color Emoji is required: the status line is built from
+         flag, arrow, shield and battery glyphs. Without it waybar has
+         no fallback and renders them as tofu boxes. */
+      font-family: "Noto Sans", "Noto Color Emoji", "Font Awesome 6 Free";
+      font-size: 13px;
+      border: none;
+      border-radius: 0;
+      min-height: 0;
+    }
+
+    window#waybar {
+      background-color: #${colors.bg};
+      color: #${colors.fg};
+    }
+
+    #workspaces button {
+      padding: 0 5px;
+      color: #${colors.brightBg};
+      min-width: 0;
+    }
+
+    #workspaces button.active {
+      color: #${colors.blue};
+    }
+
+    #window {
+      color: #${colors.fg};
+    }
+
+    #custom-status-net,
+    #custom-status-disk,
+    #custom-status-cpu,
+    #custom-status-mem,
+    #custom-status-vol,
+    #clock {
+      padding: 0 6px;
+      color: #${colors.fg};
+    }
+
+    #custom-status-vol,
+    #clock {
+      border-radius: 4px;
+    }
+
+    #custom-status-vol:hover,
+    #clock:hover {
+      background-color: #${colors.brightBg};
+    }
+
+    #tray {
+      padding: 0 6px;
+    }
+  '';
+
+  # Build a comprehensive theme collection store path
+  waybarThemesDrv = pkgs.runCommand "waybar-themes-collection" {} ''
+    mkdir -p $out/default $out/hancore $out/macos
+
+    # 1. Default theme
+    cat <<'EOF' > $out/default/config.jsonc
+${defaultConfigJson}
+EOF
+    cat <<'EOF' > $out/default/style.css
+${defaultStyleCss}
+EOF
+
+    # 2. Hancore themes collection
+    if [ -d "${hancoreThemes}/config" ]; then
+      cp -r ${hancoreThemes}/config/. $out/hancore/
+    elif [ -d "${hancoreThemes}" ]; then
+      cp -r ${hancoreThemes}/. $out/hancore/
+    fi
+
+    # 3. macOS Sequoia themes
+    if [ -d "${macosThemes}" ]; then
+      cp -r ${macosThemes}/. $out/macos/
+    fi
+  '';
+
+  # Helper script to list and switch between categories and themes.
+  # Symlinks through /etc/xdg/waybar/themes rather than directly into a
+  # specific /nix/store hash so that ~/.config/waybar links stay valid
+  # across nix-collect-garbage and automatically pick up new builds.
+  waybarSwitchScript = pkgs.writeShellScriptBin "waybar-switch" ''
+    set -euo pipefail
+    THEMES_DIR="/etc/xdg/waybar/themes"
+    TARGET_CONF="$HOME/.config/waybar/config.jsonc"
+    TARGET_STYLE="$HOME/.config/waybar/style.css"
+
+    if [ "$#" -eq 0 ]; then
+      echo "Usage: waybar-switch [default|macos|hancore/<theme_name>]"
+      echo "Available categories and themes:"
+      echo "--- default ---"
+      echo "default"
+      echo "--- macos ---"
+      echo "macos"
+      echo "--- hancore ---"
+      ls -1 "$THEMES_DIR/hancore" 2>/dev/null || true
+      exit 1
+    fi
+
+    CHOICE="$1"
+
+    if [ "$CHOICE" = "default" ]; then
+      SRC_DIR="$THEMES_DIR/default"
+    elif [ "$CHOICE" = "macos" ]; then
+      SRC_DIR="$THEMES_DIR/macos"
+    elif [[ "$CHOICE" == hancore/* ]]; then
+      THEME_NAME="''${CHOICE#hancore/}"
+      SRC_DIR="$THEMES_DIR/hancore/$THEME_NAME"
+    else
+      if [ -d "$THEMES_DIR/hancore/$CHOICE" ]; then
+        SRC_DIR="$THEMES_DIR/hancore/$CHOICE"
+      else
+        echo "Error: Theme '$CHOICE' not found!"
+        exit 1
+      fi
+    fi
+
+    if [ ! -d "$SRC_DIR" ]; then
+      echo "Error: Theme directory '$SRC_DIR' does not exist!"
+      exit 1
+    fi
+
+    mkdir -p "$HOME/.config/waybar"
+
+    if [ -f "$SRC_DIR/config.jsonc" ]; then
+      ln -sf "$SRC_DIR/config.jsonc" "$TARGET_CONF"
+    elif [ -f "$SRC_DIR/config.json" ]; then
+      ln -sf "$SRC_DIR/config.json" "$TARGET_CONF"
+    elif [ -f "$SRC_DIR/config" ]; then
+      ln -sf "$SRC_DIR/config" "$TARGET_CONF"
+    fi
+
+    if [ -f "$SRC_DIR/style.css" ]; then
+      ln -sf "$SRC_DIR/style.css" "$TARGET_STYLE"
+    fi
+
+    echo "Switched Waybar theme to: $CHOICE"
+    systemctl --user restart waybar.service
+  '';
+
   # Small helper so SUPER+A can sync the compositor cursor to whatever
   # nwg-look just wrote into gtk-3.0/settings.ini. Setcursor still needs
   # the theme name as it appears in share/icons/<name>/cursors, so we must
   # read back from that file and call hyprctl setcursor (FAQ step 2).
   pushCursor = pkgs.writeShellScript "push-cursor-from-gtk" ''
+    set -euo pipefail
     ini="''${XDG_CONFIG_HOME:-$HOME/.config}/gtk-3.0/settings.ini"
     [ -r "$ini" ] || exit 0
-    theme=$(sed -n 's/^gtk-cursor-theme-name *= *//p' "$ini" | head -1)
-    theme=$(printf '%s' "$theme" | sed 's/^"//; s/"$//' | tr -d '\r')
+
+    theme=$(sed -n 's/^gtk-cursor-theme-name *= *//p' "$ini" | head -1 | tr -d '\r"')
     [ -n "$theme" ] || exit 0
 
     # A theme whose cursors/ directory exists but is empty is the one case
@@ -34,17 +286,18 @@ let
     # existence check below would otherwise discard it. Note this is
     # different from a name with no directory at all, which makes Hyprland
     # load the standard X11 pointer instead.
-    dirs=$(printf '%s\n' "''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" "$HOME/.local/share" "$HOME/.icons" | tr ':\n' '  ')
+    IFS=':' read -ra xdg_dirs <<< "''${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    search_dirs=("''${xdg_dirs[@]}" "$HOME/.local/share" "$HOME/.icons")
+
     found=0
-    empty=0
-    for dir in $dirs; do
+    for dir in "''${search_dirs[@]}"; do
       if [ -d "$dir/icons/$theme/cursors" ]; then
         found=1
-        [ -z "$(ls -A "$dir/icons/$theme/cursors" 2>/dev/null)" ] && empty=1
         break
       fi
     done
     [ "$found" -eq 1 ] || exit 0
+
     size=$(sed -n 's/^gtk-cursor-theme-size *= *//p' "$ini" | head -1 | tr -cd 0-9)
     [ -n "$size" ] || size=24
     hyprctl setcursor "$theme" "$size" || true
@@ -55,6 +308,7 @@ let
   # Hyprland's syncGsettings re-applies gtk-3.0/settings.ini and would
   # otherwise undo the setcursor on the next reload.
   resetCursor = pkgs.writeShellScript "reset-cursor-to-hyprland" ''
+    set -euo pipefail
     blank=blank-theme
     for f in "''${XDG_CONFIG_HOME:-$HOME/.config}/gtk-3.0/settings.ini" \
              "''${XDG_CONFIG_HOME:-$HOME/.config}/gtk-4.0/settings.ini" \
@@ -66,6 +320,7 @@ let
         printf '[Settings]\ngtk-cursor-theme-name=%s\n' "$blank" >> "$f"
       fi
     done
+
     # The stub has to exist with an empty cursors/ dir, else Hyprland loads
     # the standard X11 pointer rather than its own fallback. Created in both
     # locations libXcursor scans because which one it consults depends on
@@ -87,7 +342,7 @@ in
   # waybar's packaged unit is additionally
   # Requisite=graphical-session.target, so neither can start until
   # that target is active. Nothing here activates it: Hyprland is
-  # launched by LightDM, which does not, and there is no uwsm. The
+  # launched by GDM/LightDM, which does not, and there is no uwsm. The
   # bar was simply absent.
   #
   # Activating graphical-session.target directly is not acceptable
@@ -96,7 +351,7 @@ in
   # configuration already annotates as "not in Wayland".
   #
   # Hyprland therefore owns a target of its own, started from
-  # hyprland.conf, and the bar is given a unit written here rather
+  # hyprland.lua, and the bar is given a unit written here rather
   # than the packaged one - unitConfig cannot clear Requisite,
   # because an empty list renders to no lines at all.
   # -----------------------------------------------------
@@ -104,6 +359,7 @@ in
     description = "Services belonging to the Hyprland session";
   };
 
+  # Point waybar systemd service to use your live config path so hot-swapping takes effect on restart
   systemd.user.services.waybar = {
     description = "Waybar status bar for the Hyprland session";
     wantedBy = [ "hyprland-session.target" ];
@@ -122,10 +378,7 @@ in
     # it in [Unit] where it counts.
     startLimitIntervalSec = 0;
     serviceConfig = {
-      # XDG_CONFIG_DIRS in the user manager already contains /etc/xdg,
-      # but pass the paths explicitly so the bar cannot silently fall
-      # back to waybar's built-in config if that ever changes.
-      ExecStart = "${pkgs.waybar}/bin/waybar -c /etc/xdg/waybar/config.jsonc -s /etc/xdg/waybar/style.css";
+      ExecStart = "${pkgs.waybar}/bin/waybar -c %h/.config/waybar/config.jsonc -s %h/.config/waybar/style.css";
       Restart = "on-failure";
       # The session target is started from the compositor's own
       # "hyprland.start" event, which can fire before the user manager
@@ -145,9 +398,7 @@ in
   # symlink is harmless because that target stays inactive.
   systemd.user.services.hypridle.wantedBy = [ "hyprland-session.target" ];
 
-  programs.hyprlock = {
-    enable = true;
-  };
+  programs.hyprlock.enable = true;
 
   # hyprlock sets up the PAM service it needs to authenticate and turns
   # on services.hypridle; the daemon itself is configured further down.
@@ -174,7 +425,25 @@ in
     yazi
     cliamp
     playerctl
+    waybarSwitchScript # Exposes the switcher command globally
   ];
+
+  # Seed the initial fallback default theme into ~/.config/waybar on activation if missing,
+  # and migrate any direct /nix/store/...-waybar-themes-collection symlinks to /etc/xdg/waybar/themes.
+  system.activationScripts.initWaybarTheme = lib.stringAfter [ "etc" ] ''
+    mkdir -p /home/*/.config/waybar || true
+    for user_dir in /home/*; do
+      if [ -d "$user_dir/.config/waybar" ]; then
+        for file in config.jsonc style.css; do
+          target="$user_dir/.config/waybar/$file"
+          if [ ! -e "$target" ] || [[ "$(readlink "$target" 2>/dev/null || true)" == /nix/store/*-waybar-themes-collection/default/* ]]; then
+            ln -sf "/etc/xdg/waybar/themes/default/$file" "$target"
+          fi
+        done
+        chown -h -R "$(stat -c '%u:%g' "$user_dir")" "$user_dir/.config/waybar" || true
+      fi
+    done
+  '';
 
   # System-wide Hyprland Configuration
   # -----------------------------------------------------
@@ -213,26 +482,9 @@ in
     -------- MONITORS / WORKSPACES --
     --------------------------------
 
-    hl.monitor({
-        output   = "HDMI-A-1",
-        mode     = "2560x1440@60",
-        position = "0x0",
-        scale    = 1,
-    })
-
-    hl.monitor({
-        output   = "DP-2",
-        mode     = "2560x1440@60",
-        position = "2560x0",
-        scale    = 1,
-    })
-
-    hl.monitor({
-        output   = "",
-        mode     = "preferred",
-        position = "auto",
-        scale    = 1,
-    })
+    hl.monitor({ output = "HDMI-A-1", mode = "2560x1440@60", position = "0x0", scale = 1 })
+    hl.monitor({ output = "DP-2", mode = "2560x1440@60", position = "2560x0", scale = 1 })
+    hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
     hl.workspace_rule({ workspace = "1", monitor = "DP-2", default = true })
     hl.workspace_rule({ workspace = "2", monitor = "HDMI-A-1", default = true })
@@ -267,17 +519,6 @@ in
     hl.env("HYPRCURSOR_SIZE", "24")
     hl.env("XCURSOR_SIZE", "24")
 
-    -- XCURSOR_THEME is deliberately NOT pinned to blank-theme here. It used
-    -- to be, which made the blue cursor work but overrode the persisted GTK
-    -- setting on every boot: Hyprland reads the env var at startup, before
-    -- anything consults gtk-3.0/settings.ini, so a macOS pick made in
-    -- nwg-look was silently discarded on the next reboot. Instead the GTK
-    -- files are the single source of truth and are pushed into the
-    -- compositor once at startup, below. Those files also hold
-    -- "blank-theme" when the blue fallback is wanted, and pushCursor passes
-    -- that sentinel through, so blue still persists across reboots - it
-    -- just comes from the same place the macOS choice does.
-    
 
     -------------------
     ---- LOOK AND FEEL --
@@ -288,22 +529,24 @@ in
             gaps_in    = 4,
             gaps_out   = 8,
             border_size = 2,
-
             col = {
                 active_border   = { colors = { "rgba(${colors.blue}ff)", "rgba(${colors.cyan}ff)" }, angle = 45 },
                 inactive_border = "rgba(${colors.brightBg}aa)",
             },
-
             layout = "dwindle",
         },
-
         decoration = {
             rounding = 8,
-            blur = {
-                enabled = true,
-                size    = 3,
-                passes  = 2,
-            },
+            blur = { enabled = true, size = 3, passes = 2 },
+        },
+        animations = {
+            enabled = true,
+            animation = {
+                "layers, 0",
+                "fadeLayersIn, 0",
+                "fadeLayersOut, 0",
+                "fadePopups, 0"
+            }
         },
     })
 
@@ -375,24 +618,24 @@ in
     -- networkctl, not nmtui: this machine runs systemd-networkd + iwd, so
     -- NetworkManager (and therefore nmtui) is not installed.
     hl.bind(mainMod .. " + CTRL + W", hl.dsp.exec_cmd(terminal .. " -e ${networkctlBin} status"))
+    hl.bind(mainMod .. " + CTRL + B", hl.dsp.exec_cmd(terminal .. " -e bluetoothctl"))
 
-    hl.bind(mainMod .. " + CTRL + B",      hl.dsp.exec_cmd(terminal .. " -e bluetoothctl"))
+    -- Appearance: cursor, icon theme, GTK theme, fonts. nwg-look is the
+    -- editor the FAQ recommends. It writes gtk-cursor-theme-name to
+    -- ~/.config/gtk-3.0/settings.ini, which covers GTK apps but NOT the
+    -- compositor - Hyprland loads its own cursor from share/icons, so
+    -- the FAQ's second step is hyprctl setcursor. Reading the setting back
+    -- and pushing it here is what makes the cursor change everywhere
+    -- instead of only inside GTK windows.
+    -- Wrapped in sh -c so the shell chains both commands properly.
+    hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("sh -c 'nwg-look; ${pushCursor}'"))
 
-      -- Appearance: cursor, icon theme, GTK theme, fonts. nwg-look is the
-      -- editor the FAQ recommends. It writes gtk-cursor-theme-name to
-      -- ~/.config/gtk-3.0/settings.ini, which covers GTK apps but NOT the
-      -- compositor - Hyprland loads its own cursor from share/icons, so
-      -- the FAQ's second step is hyprctl setcursor. Reading the setting back
-      -- and pushing it here is what makes the cursor change everywhere
-      -- instead of only inside GTK windows.
-      hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("nwg-look; ${pushCursor}"))
-
-      -- Back to the stock blue Hyprland cursor from any themed one. Pairs
-      -- with SUPER+A: pick a theme there, press this to undo it. A dedicated
-      -- key rather than a toggle because the two directions are not
-      -- symmetric - there is no theme that is "the macOS cursor" to toggle
-      -- back to, only whichever was last chosen.
-      hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("${resetCursor}"))
+    -- Back to the stock blue Hyprland cursor from any themed one. Pairs
+    -- with SUPER+A: pick a theme there, press this to undo it. A dedicated
+    -- key rather than a toggle because the two directions are not
+    -- symmetric - there is no theme that is "the macOS cursor" to toggle
+    -- back to, only whichever was last chosen.
+    hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("${resetCursor}"))
 
     -- Workspaces. 10 is on the 0 key, same as before.
     for i = 1, 10 do
@@ -401,13 +644,11 @@ in
         hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
     end
 
-    -- Mouse: drag and resize
+    -- Mouse: drag and resize.
     hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
     hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
-    -- Audio and media. The two volume keys and the two brightness keys were
-    -- `binde` in hyprlang, meaning they also fire while the screen is
-    -- locked; the media keys were plain binds and stay that way.
+    -- Media and brightness.
     hl.bind("XF86AudioRaiseVolume",   hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
     hl.bind("XF86AudioLowerVolume",   hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
     hl.bind("XF86AudioMute",          hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
@@ -424,6 +665,13 @@ in
     local screenshot = "bash -c 'FILE=~/Pictures/Screenshot_$(date +%Y%m%d_%H%M%S).png; grim -g \"$(slurp)\" \"$FILE\" && wl-copy < \"$FILE\"'"
     hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd(screenshot))
     hl.bind("Print", hl.dsp.exec_cmd(screenshot))
+
+    hl.window_rule({
+      name = "firefox-no-animations",
+      match = { class = "[Ff]irefox" },
+      no_anim = true,
+      opacity = "1.0 override 1.0 override 1.0 override"
+    })
 
 
     -------------------------
@@ -564,166 +812,15 @@ in
     }
   '';
 
-  # System-wide waybar configuration.
-  #
-  # The status segments come from the same script that backs sway's
-  # bar, asked for one section at a time so that each segment can carry
-  # its own click and scroll handlers.
-  environment.etc."xdg/waybar/config.jsonc".text = ''
-    {
-      "layer": "top",
-      "position": "top",
-      "height": 28,
-      "spacing": 4,
-      "modules-left": ["hyprland/workspaces", "hyprland/window"],
-      "modules-center": [
-        "custom/status-net",
-        "custom/status-disk",
-        "custom/status-cpu",
-        "custom/status-mem",
-        "custom/status-vol"
-      ],
-      "modules-right": ["tray", "clock"],
-
-      "hyprland/workspaces": {
-        "format": "{icon}",
-        "format-icons": {
-          "active": "●",
-          "default": "○"
-        }
-      },
-
-      "hyprland/window": {
-        "max-length": 60
-      },
-
-      "custom/status-net": {
-        "exec": "${statusBar} --once --section net",
-        "interval": 2,
-        "restart-interval": 5,
-        "max-length": 400,
-        "on-click": "${panel} --section net"
-      },
-
-      "custom/status-disk": {
-        "exec": "${statusBar} --once --section disk",
-        "interval": 5,
-        "restart-interval": 10,
-        "max-length": 120,
-        "on-click": "${panel} --section disk"
-      },
-
-      "custom/status-cpu": {
-        "exec": "${statusBar} --once --section cpu",
-        "interval": 2,
-        "restart-interval": 5,
-        "max-length": 80,
-        "on-click": "${panel} --section cpu"
-      },
-
-      "custom/status-mem": {
-        "exec": "${statusBar} --once --section mem",
-        "interval": 2,
-        "restart-interval": 5,
-        "max-length": 80,
-        "on-click": "${panel} --section mem"
-      },
-
-      "custom/status-vol": {
-        "exec": "${statusBar} --once --section vol",
-        "interval": 2,
-        "restart-interval": 5,
-        "max-length": 60,
-        "on-click": "${wpctlBin} set-mute @DEFAULT_AUDIO_SINK@ toggle",
-        "on-scroll-up": "${wpctlBin} set-volume @DEFAULT_AUDIO_SINK@ 5%+",
-        "on-scroll-down": "${wpctlBin} set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-      },
-
-      // Native clock, not a custom module running wm-status. Comments here must
-  // use // : this is emitted into a .jsonc that waybar parses as JSONC, and
-  // a # line is a hard parse error that would take the whole bar down.
-  //
-  // A custom module is respawned by a plain periodic timer, and that timer
-  // is not phase-locked to wall-clock seconds, so it drifts and periodically
-  // lands after the boundary it should have hit: measured at roughly one
-  // whole second per minute with no update at all, which is the visible
-  // skip. It also cost ~306ms per poll, spawned once per monitor, so about
-  // 0.6s of CPU per second just to draw a clock.
-  //
-  // The built-in clock sleeps to the next interval boundary
-  // (now % interval), so it wakes exactly on the second and cannot skip
-  // or repeat, and it formats in-process with no subprocess at all.
-  "clock": {
-        "interval": 1,
-        "format": "<span>{:%a %d %b %Y  %I:%M:%S %p}</span>",
-        "tooltip-format": "<big>{}</big>",
-        "on-click": "${panel} --section time"
-      },
-
-      "tray": {
-        "icon-size": 16,
-        "spacing": 8
-      }
-    }
-  '';
-
-  environment.etc."xdg/waybar/style.css".text = ''
-    * {
-      /* Noto Color Emoji is required: the status line is built from
-         flag, arrow, shield and battery glyphs. Without it waybar has
-         no fallback and renders them as tofu boxes. */
-      font-family: "Noto Sans", "Noto Color Emoji", "Font Awesome 6 Free";
-      font-size: 13px;
-      border: none;
-      border-radius: 0;
-      min-height: 0;
-    }
-
-    window#waybar {
-      background-color: #1e1e1e;
-      color: #ffffff;
-    }
-
-    #workspaces button {
-      padding: 0 5px;
-      color: #5c5c5c;
-      min-width: 0;
-    }
-
-    #workspaces button.active {
-      color: #${colors.blue};
-    }
-
-    #window {
-      color: #${colors.fg};
-    }
-
-    #custom-status-net,
-    #custom-status-disk,
-    #custom-status-cpu,
-    #custom-status-mem,
-    #custom-status-vol,
-    #custom-status-time {
-      padding: 0 6px;
-      color: #ffffff;
-    }
-
-    #custom-status-vol {
-      border-radius: 4px;
-    }
-
-    #custom-status-vol:hover {
-      background-color: #323232;
-    }
-
-    #tray {
-      padding: 0 6px;
-    }
-  '';
+  # System-wide waybar configuration and themes collection.
+  environment.etc."xdg/waybar/config.jsonc".text = defaultConfigJson;
+  environment.etc."xdg/waybar/style.css".text = defaultStyleCss;
+  environment.etc."xdg/waybar/themes".source = waybarThemesDrv;
 
   # Set Ozone Wayland backend system-wide for Chromium/Electron apps
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
+    MOZ_ENABLE_WAYLAND = "1";
     TERMINAL = "foot";
   };
 }
