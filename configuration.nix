@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, lib, ... }:
+{ config, pkgs, inputs, ... }:
 
 
 {
@@ -7,7 +7,9 @@
     ./editor.nix
     ./shell.nix
     ./ghostty.nix
+    ./wm-common.nix
     ./sway.nix
+    ./hyprland.nix
     ./tinywl.nix
     ./foot.nix
   ];
@@ -62,16 +64,30 @@
   # specialArgs = { inherit inputs; }—dumb
   # registry.nixpkgs.flake = inputs.nixpkgs—ugh
   nix = {
-    settings.trusted-users = [ "root" "rjpc" ];
+    settings = {
+      trusted-users = [ "root" "rjpc" ];
+      auto-optimise-store = true;
+      show-trace = true;
+
+      # Public binary caches (cache.nixos.org is enabled by default by NixOS,
+      # and cache.flakehub.com is configured by the Determinate module).
+      extra-substituters = [
+        "https://cache.numtide.com"
+        "https://cache.thalheim.io"
+        "https://nix-community.cachix.org"
+      ];
+      extra-trusted-public-keys = [
+        "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+        "cache.thalheim.io-1:R7msbosLEZKrxk/lKxf9BTjOOH7Ax3H0Qj0/6wiHOgc="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+    };
     nixPath = [ "nixpkgs=flake:nixpkgs" ];
-    settings.auto-optimise-store = true;
-    # auto-allocate-uids started throwing warnings with recent update to Uakari
+    channel.enable = false;
+    registry.nixpkgs.flake = inputs.nixpkgs;
     extraOptions = ''
       experimental-features = nix-command flakes auto-allocate-uids wasm-builtin
     '';
-    channel.enable = false;
-    registry.nixpkgs.flake = inputs.nixpkgs;
-    settings.show-trace = true;
   };
   # #
 
@@ -103,6 +119,7 @@
     packages = with pkgs; [ terminus_font ];
     keyMap = "us";
     # HABAMAX-ALIGNED PALETTE
+    # Kept in step with wayland.colors in wm-common.nix.
     colors = [
       "1c1c1c" # Color 0:  Black          (habamax color00 - dark bg)
       "af5f5f" # Color 1:  Red            (habamax color01 - muted brick red)
@@ -149,11 +166,10 @@
   services.ollama = {
     enable = true;
     package = pkgs.ollama-rocm;
-    rocmOverrideGfx = "11.0.1";
+    rocmOverrideGfx = "11.0.0";
     environmentVariables = {
       OLLAMA_DEBUG = "1";
       OLLAMA_HOST = "0.0.0.0";
-      HSA_OVERRIDE_GFX_VERSION = "11.0.0";
       HCC_AMDGPU_TARGET = "gfx1100";
     };
   };
@@ -198,13 +214,6 @@
     wheelNeedsPassword = false;
   };
   security.sudo.wheelNeedsPassword = false;
-  security.sudo.extraRules = [{
-  users = [ "rjpc" ];
-  commands = [{
-    command = "/usr/local/bin/toggle-net.sh";
-    options = [ "NOPASSWD" ];
-  }];
-}];
   # #
 
   # Anti-virus #
@@ -223,7 +232,7 @@
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
       liberation_ttf          # Drop-in replacement for Arial, Times New Roman, Courier
-      corefonts               # Microsoft fonts (Arial, Times, Verdana, etc.)
+      # corefonts               # Microsoft fonts (Arial, Times, Verdana, etc.)
       dejavu_fonts
       font-awesome            # Icon font widely used on web pages
       roboto
@@ -453,6 +462,8 @@
     cmake
     # https://github.com/nix-community/colmena
     colmena
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop
     direnv
     dust
     ed
@@ -468,7 +479,8 @@
     grpcui
     lact
     libreoffice
-    (makemkv.override { ffmpeg_8 = ffmpeg_6; }) # WARNING: broken in ffmpeg_7. File issue in nixpkgs for maintainer.
+    makemkv # WARNING got 525 SSL Handshake failed...
+    nixd
     nixpkgs-fmt
     nixpkgs-review
     pamixer
@@ -482,6 +494,18 @@
     usbutils
     wget
     xdg-utils
+    # nwg-look is the GTK settings editor the Hyprland FAQ recommends.
+    nwg-look
+
+    # Cursor themes. Being in systemPackages is what makes these visible:
+    # nwg-look and Hyprland both scan XDG_DATA_DIRS, which already contains
+    # /run/current-system/sw/share, so no symlinking is needed. Without at
+    # least one, the cursor list in nwg-look only offers Adwaita and there
+    # is nothing to switch back to the stock cursor from.
+    apple-cursor           # macOS, and macOS-White
+    bibata-cursors         # Bibata, material-style, has many variants
+    breeze-hacked-cursor-theme # closest to a Windows 11 look
+    catppuccin-cursors
     libXft
     xev
     xmodmap
@@ -500,6 +524,8 @@
     libbluray
     mons
     mpv-unwrapped # see overlays
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode-desktop
     overskride
     polybar
     p11-kit
@@ -519,6 +545,7 @@
         ms-python.python
         ms-vscode.makefile-tools
         naumovs.color-highlight
+        jnoortheen.nix-ide
       ];
     })
     # wine

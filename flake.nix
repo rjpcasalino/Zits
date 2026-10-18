@@ -16,15 +16,24 @@
     # ghostty = {
     #  url = "github:ghostty-org/ghostty";
     # };
-    # add to putputs if you want it ^; using foot for now and xterm otherwise
+    # add to outputs if you want it ^; using foot for now and xterm otherwise
+    llm-agents.url = "github:numtide/llm-agents.nix";
+    waybar-themes = {
+      url = "github:HANCORE-linux/waybar-themes";
+      flake = false;
+    };
+    waybar-macos = {
+      url = "github:kamlendras/waybar-macos-sequoia";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, sops-nix, determinate, ... }@inputs: {
+  outputs = { self, nixpkgs, sops-nix, determinate, waybar-themes, waybar-macos, ... }@inputs: {
     nixosModules = { };
     nixosConfigurations.zits = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       specialArgs = { inherit inputs; };
-      modules = with self.nixosModules; [
+      modules = [
         ./configuration.nix
         sops-nix.nixosModules.sops
         determinate.nixosModules.default
