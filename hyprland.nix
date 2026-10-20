@@ -638,10 +638,12 @@ in
     hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("${resetCursor}"))
 
     -- Workspaces. 10 is on the 0 key, same as before.
+    -- SHIFT moves and follows; ALT sends the window silently (follow = false).
     for i = 1, 10 do
         local key = i % 10
         hl.bind(mainMod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
         hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+        hl.bind(mainMod .. " + ALT + " .. key,   hl.dsp.window.move({ workspace = i, follow = false }))
     end
 
     -- Mouse: drag and resize.

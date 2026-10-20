@@ -33,6 +33,10 @@
     };
 
     interactiveShellInit = ''
+      # Zsh configuration is managed system-wide in /etc/zshrc; disable the
+      # first-run wizard when no ~/.z* dotfile is present in $HOME.
+      zsh-newuser-install() { :; }
+
       eval "$(direnv hook zsh)"
       # Force Vim keybindings (human edit)
       bindkey -v

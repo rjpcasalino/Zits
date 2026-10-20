@@ -85,10 +85,16 @@
     nixPath = [ "nixpkgs=flake:nixpkgs" ];
     channel.enable = false;
     registry.nixpkgs.flake = inputs.nixpkgs;
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 14d";
+    };
     extraOptions = ''
       experimental-features = nix-command flakes auto-allocate-uids wasm-builtin
     '';
   };
+  services.journald.settings.Journal.SystemMaxUse = "500M";
   # #
 
   # systemd services #
