@@ -207,6 +207,19 @@
   services.openssh.settings.X11Forwarding = false;
   # #
 
+  ## MINIDLNA
+  services.minidlna = {
+    enable = true;
+    openFirewall = true;
+    settings.media_dir = [ "/mnt/mybook" "/mnt/elements" "/mnt/toshiba" ];
+    settings.inotify = "yes";
+  };
+  systemd.services.minidlna = {
+    after = [ "mnt-mybook.mount" "mnt-elements.mount" "mnt-toshiba.mount" ];
+    wants = [ "mnt-mybook.mount" "mnt-elements.mount" "mnt-toshiba.mount" ];
+  };
+  ##
+
   # SOPS
   sops.defaultSopsFile = "/home/rjpc/secrets/zits.yaml";
   sops.validateSopsFiles = false;
@@ -530,6 +543,7 @@
     libbluray
     mons
     mpv-unwrapped # see overlays
+    (pkgs.writeScriptBin "mplay" (builtins.readFile ./mplay.py))
     inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode
     inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode-desktop
     overskride

@@ -32,6 +32,27 @@
       fsType = "ext4";
     };
 
+  fileSystems."/mnt/mybook" =
+    {
+      device = "/dev/disk/by-uuid/E6C7-E32A";
+      fsType = "exfat";
+      options = [ "nofail" ];
+    };
+
+  fileSystems."/mnt/elements" =
+    {
+      device = "/dev/disk/by-uuid/d696c7ff-c9b2-4248-a255-11416f8f9aeb";
+      fsType = "ext4";
+      options = [ "nofail" ];
+    };
+
+  fileSystems."/mnt/toshiba" =
+    {
+      device = "/dev/disk/by-uuid/24b15508-4041-4e3c-9504-8c47b9fa56aa";
+      fsType = "ext4";
+      options = [ "nofail" ];
+    };
+
   # when I copied over using gparted to a new hd I did not include the swap
   # comment out for now and remove later
   #swapDevices =
