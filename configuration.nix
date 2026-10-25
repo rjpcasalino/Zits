@@ -6,7 +6,6 @@
     ./hardware-configuration.nix
     ./editor.nix
     ./shell.nix
-    ./ghostty.nix
     ./wm-common.nix
     ./sway.nix
     ./hyprland.nix
@@ -156,10 +155,6 @@
   };
   services.flatpak.enable = true;
   programs.steam.enable = true;
-  programs.custom-ghostty = {
-    enable = true;
-    prerelease = false; # Set to false to immediately downgrade to the stable release
-  };
   # seahorse is a UI for keyring
   programs.seahorse.enable = true;
   # git
