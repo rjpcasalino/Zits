@@ -13,10 +13,6 @@
     determinate = {
       url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
     };
-    # ghostty = {
-    #  url = "github:ghostty-org/ghostty";
-    # };
-    # add to outputs if you want it ^; using foot for now and xterm otherwise
     llm-agents.url = "github:numtide/llm-agents.nix";
     waybar-themes = {
       url = "github:HANCORE-linux/waybar-themes";
