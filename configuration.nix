@@ -21,7 +21,7 @@
   boot.extraModulePackages = [ ];
   boot.extraModprobeConfig = ''
   '';
-  boot.kernelParams = [ ];
+  boot.kernelParams = [ "video=HDMI-A-1:2560x1440@60e" ];
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "armv6l-linux" ];
   boot.tmp.cleanOnBoot = true;
   boot.loader.systemd-boot.consoleMode = "max";
