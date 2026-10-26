@@ -76,10 +76,11 @@ let
     '';
   };
 
-  # The dropdown shown when a bar segment is clicked. Same shape as
-  # statusScript: an explicit destination under $out/bin so lib.getExe
-  # resolves, and a checkPhase so a panel that renders nothing fails the
-  # build rather than surfacing as a blank popup at runtime.
+  # The dropdown shown when a bar segment is clicked, plus the keybindings
+  # cheat sheet (--section binds). Same shape as statusScript: an explicit
+  # destination under $out/bin so lib.getExe resolves, and a checkPhase so
+  # a panel that renders nothing fails the build rather than surfacing as
+  # a blank popup at runtime.
   panelScript = pkgs.writeTextFile {
     name = "wm-panel";
     destination = "/bin/wm-panel";
@@ -94,11 +95,13 @@ let
       export WM_C_YELLOW="#${colors.yellow}"
       export WM_C_RED="#${colors.red}"
 
-      # wofi and dust are resolved at build time. The panels call them by
-      # bare name, so they have to be on PATH here as well as in the
-      # unit, and the check below runs with the unit's PATH to prove it.
-      export PATH="${panelWofi}/bin:${pkgs.dust}/bin:${pkgs.util-linux}/bin:${statusCheckPath}/bin"
-      export WM_PANEL_WOFI="${panelWofi}/bin/wofi"
+      # hyprlauncher and dust are resolved at build time. The panels call
+      # them by bare name, so they have to be on PATH here as well as in
+      # the unit, and the check below runs with the unit's PATH to prove it.
+      # Prepend to the existing PATH rather than replacing it so interactive
+      # actions from the binds section can still launch session programs.
+      export PATH="${pkgs.hyprlauncher}/bin:${pkgs.dust}/bin:${pkgs.util-linux}/bin:${statusCheckPath}/bin:''${PATH:-/run/current-system/sw/bin}"
+      export WM_PANEL_LAUNCHER="${pkgs.hyprlauncher}/bin/hyprlauncher"
     '' + builtins.readFile ./status-panel.sh;
 
     checkPhase = ''
@@ -108,7 +111,7 @@ let
       # only applies once it is executed; the build environment is
       # separate. Reuse the same PATH here so the check exercises exactly
       # what the session will get.
-      export PATH="${panelWofi}/bin:${pkgs.dust}/bin:${pkgs.util-linux}/bin:${statusCheckPath}/bin"
+      export PATH="${pkgs.hyprlauncher}/bin:${pkgs.dust}/bin:${pkgs.util-linux}/bin:${statusCheckPath}/bin"
 
       # Every panel must produce pango markup with real content. A panel
       # that silently renders nothing is the failure mode that matters
@@ -118,7 +121,7 @@ let
       # Rendered text must not be stored in `out`: that is the build's
       # output path, and overwriting it breaks every later invocation and
       # the final install. (This exact mistake has now been made twice.)
-      for section in net disk cpu mem time; do
+      for section in net disk cpu mem time binds; do
         rendered=$("$out/bin/wm-panel" --section "$section" --list 2>/dev/null)
         if [ -z "$rendered" ]; then
           echo "wm-panel: section $section rendered nothing" >&2
@@ -136,9 +139,9 @@ let
         echo "ok    $section"
       done
 
-      # The popup has to be wired to the themed wofi, not to a bare one.
-      if ! $out/bin/wm-panel --section net --dry-run 2>/dev/null | grep -q 'wofi'; then
-        echo "wm-panel: --dry-run did not print a wofi command line" >&2
+      # The popup has to be wired to hyprlauncher.
+      if ! $out/bin/wm-panel --section net --dry-run 2>/dev/null | grep -q 'hyprlauncher'; then
+        echo "wm-panel: --dry-run did not print a hyprlauncher command line" >&2
         exit 1
       fi
 
@@ -185,122 +188,6 @@ let
   statusCheckPath = pkgs.buildEnv {
     name = "wm-status-check-path";
     paths = statusRuntimeDeps ++ [ statusUnitDefaultPath ];
-  };
-
-  # Launcher theme, previously defined inside sway.nix and therefore
-  # unavailable to the Hyprland session.
-  wofiStyle = pkgs.writeText "wofi-style.css" ''
-    window {
-        margin: 0px;
-        padding: 0px;
-        opacity: 0.9;
-        border: 2px solid #99e1d0;
-        background-color: rgba(234, 253, 240, 0.9);
-        border-radius: 0 10px 10px 0;
-    }
-
-    #input {
-        margin: 5px;
-        border: none;
-        color: #000000;
-        background-color: #fdba00;
-    }
-
-    #inner-box {
-        margin: 5px;
-        border: none;
-        background-color: #eafdf0;
-    }
-
-    #outer-box {
-        margin: 5px;
-        border: none;
-        background-color: #eafdf0;
-    }
-
-    #text {
-        margin: 5px;
-        border: none;
-        color: #000000;
-    }
-
-    #entry:selected {
-        background-color: #7897e8;
-        border-radius: 6px;
-    }
-
-    list {
-        background-color: #7897e8;
-        border-radius: 6px;
-    }
-  '';
-
-  themedWofi = pkgs.symlinkJoin {
-    name = "wofi-custom";
-    paths = [ pkgs.wofi ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/wofi --add-flags "--style ${wofiStyle}"
-    '';
-  };
-
-  # Theme for the status dropdowns, deliberately separate from the
-  # launcher above: the launcher is light and high-contrast because it is
-  # something you type into, whereas a panel is read-only and should sit
-  # quietly under a dark bar. Reusing the launcher sheet would also mean
-  # a panel and a launcher could not be open at the same time without
-  # looking like the same window.
-  panelStyle = pkgs.writeText "wofi-panel-style.css" ''
-    window {
-        margin: 0px;
-        padding: 0px;
-        opacity: 0.97;
-        border: 2px solid #${colors.blue};
-        border-radius: 0 0 10px 10px;
-        background-color: #${colors.bg};
-    }
-
-    #outer-box {
-        margin: 0px;
-        padding: 0px;
-        border: none;
-        background-color: #${colors.bg};
-    }
-
-    #inner-box {
-        margin: 0px;
-        padding: 6px;
-        border: none;
-        background-color: #${colors.bg};
-    }
-
-    #text {
-        margin: 0px;
-        padding: 0px;
-        border: none;
-        color: #${colors.fg};
-    }
-
-    list {
-        background-color: #${colors.bg};
-        border: none;
-    }
-
-    #entry:selected, listchild:selected {
-        background-color: #${colors.brightBg};
-        border-radius: 4px;
-    }
-  '';
-
-  # wofi preloaded with the panel stylesheet, kept apart from the
-  # launcher wrapper so the two themes cannot collide.
-  panelWofi = pkgs.symlinkJoin {
-    name = "wofi-panel";
-    paths = [ pkgs.wofi ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/wofi --add-flags "--style ${panelStyle}"
-    '';
   };
 
   # Dock theme, previously only reachable through a commented-out
@@ -358,9 +245,9 @@ in
       '';
     };
 
-    wofi = lib.mkOption {
+    launcher = lib.mkOption {
       type = lib.types.package;
-      description = "wofi, preloaded with the shared launcher stylesheet.";
+      description = "hyprlauncher package shared by the Wayland sessions.";
     };
 
     nwgDock = lib.mkOption {
@@ -379,10 +266,9 @@ in
     panel = lib.mkOption {
       type = lib.types.package;
       description = ''
-        Dropdown shown when a bar segment is clicked, rendered with the
-        panel wofi theme. Takes --section net|disk|cpu|mem|time, so each
-        segment can have its own content instead of every one of them
-        opening the same program.
+        Dropdown shown when a bar segment is clicked (or when the keybindings
+        cheat sheet is opened), rendered with hyprlauncher in dmenu mode.
+        Takes --section net|disk|cpu|mem|time|binds.
       '';
     };
 
@@ -402,7 +288,7 @@ in
       inherit colors;
       statusBar = statusScript;
       panel = panelScript;
-      wofi = themedWofi;
+      launcher = pkgs.hyprlauncher;
       nwgDock = themedNwgDock;
       wallpaperChanger = wallpaperChanger;
       statusRuntimeDeps = statusRuntimeDeps;
@@ -412,7 +298,7 @@ in
     environment.systemPackages = [
       config.wayland.statusBar
       config.wayland.panel
-      config.wayland.wofi
+      config.wayland.launcher
       config.wayland.wallpaperChanger
     ];
   };

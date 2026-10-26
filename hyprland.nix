@@ -541,6 +541,36 @@ in
   # symlink is harmless because that target stays inactive.
   systemd.user.services.hypridle.wantedBy = [ "hyprland-session.target" ];
 
+  # hyprlauncher daemon, started with the session so toggling the launcher
+  # (hyprlauncher -t) or opening a dmenu panel (hyprlauncher --dmenu) over
+  # hyprwire IPC is instantaneous.
+  #
+  # NixOS systemd user units default to a minimal PATH (coreutils, findutils,
+  # gnugrep, gnused, systemd) which overrides the user manager's environment
+  # PATH. Because hyprlauncher spawns selected desktop apps directly via
+  # `/bin/sh -c <Exec>`, the unit must include the standard user/system profile
+  # bin directories on PATH or every app launch fails with "command not found".
+  systemd.user.services.hyprlauncher = {
+    description = "Hyprlauncher daemon for the Hyprland session";
+    wantedBy = [ "hyprland-session.target" ];
+    unitConfig.ConditionEnvironment = "WAYLAND_DISPLAY";
+    startLimitIntervalSec = 0;
+    environment = {
+      TERMINAL = "foot";
+    };
+    serviceConfig = {
+      Environment = lib.mkForce [
+        "PATH=/run/wrappers/bin:%h/.local/share/flatpak/exports/bin:/var/lib/flatpak/exports/bin:%h/.nix-profile/bin:/nix/profile/bin:%h/.local/state/nix/profile/bin:/etc/profiles/per-user/%u/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin"
+        "LOCALE_ARCHIVE=${config.i18n.glibcLocales}/lib/locale/locale-archive"
+        "TZDIR=/etc/zoneinfo"
+        "TERMINAL=foot"
+      ];
+      ExecStart = "${pkgs.hyprlauncher}/bin/hyprlauncher -d";
+      Restart = "on-failure";
+      RestartSec = "1s";
+    };
+  };
+
   programs.hyprlock.enable = true;
 
   # hyprlock sets up the PAM service it needs to authenticate and turns
@@ -551,6 +581,7 @@ in
   environment.systemPackages = with pkgs; [
     foot
     waybar
+    hyprlauncher
     btop
     dust
     font-awesome
@@ -574,9 +605,18 @@ in
 
   # Seed the initial fallback default theme into ~/.config/waybar on activation if missing,
   # and migrate any direct /nix/store/...-waybar-themes-collection symlinks to /etc/xdg/waybar/themes.
+  # Also link hyprtoolkit.conf and hyprlauncher.conf into ~/.config/hypr so
+  # hyprtoolkit (which checks $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf) picks up
+  # the system-wide palette.
   system.activationScripts.initWaybarTheme = lib.stringAfter [ "etc" ] ''
     mkdir -p /home/*/.config/waybar || true
     for user_dir in /home/*; do
+      if [ -d "$user_dir" ]; then
+        mkdir -p "$user_dir/.config/hypr"
+        ln -sf "/etc/xdg/hypr/hyprtoolkit.conf" "$user_dir/.config/hypr/hyprtoolkit.conf"
+        ln -sf "/etc/xdg/hypr/hyprlauncher.conf" "$user_dir/.config/hypr/hyprlauncher.conf"
+        chown -h -R "$(stat -c '%u:%g' "$user_dir")" "$user_dir/.config/hypr" || true
+      fi
       if [ -d "$user_dir/.config/waybar" ]; then
         if [ ! -e "$user_dir/.config/waybar/config.jsonc" ]; then
           ln -sf "/etc/xdg/waybar/themes/default/config.jsonc" "$user_dir/.config/waybar/config.jsonc"
@@ -649,7 +689,7 @@ EOF
     ---------------------
 
     local terminal = "foot"
-    local menu     = "wofi --show drun"
+    local menu     = "hyprlauncher -t"
     local mainMod  = "SUPER"
 
     -- Cursor. HYPRCURSOR_SIZE covers the compositor; XCURSOR_SIZE is what Qt and
@@ -709,11 +749,12 @@ EOF
     ---- KEYBINDINGS ---
     -------------------
 
-    -- Terminal and launcher
+    -- Terminal, launcher, and keybindings cheat sheet
     hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
     hl.bind(mainMod .. " + Space",  hl.dsp.exec_cmd(menu))
     hl.bind(mainMod .. " + D",      hl.dsp.exec_cmd(menu))
-    hl.bind(mainMod .. " + ALT + Space", hl.dsp.exec_cmd("wofi --show run"))
+    hl.bind(mainMod .. " + ALT + Space", hl.dsp.exec_cmd("hyprlauncher -f math"))
+    hl.bind(mainMod .. " + slash",  hl.dsp.exec_cmd("${panel} --section binds"))
 
     -- Focus: arrows, plus vim hjkl (H/L/K/J mirror left/right/up/down).
     local focus_dirs = {
@@ -965,6 +1006,54 @@ EOF
         position = 0, 200
         halign = center
         valign = center
+    }
+  '';
+
+  # -----------------------------------------------------
+  # hyprtoolkit & hyprlauncher configuration.
+  #
+  # Styled with the shared Habamax palette so the launcher,
+  # bar segment dropdowns (wm-panel), and keybindings popup
+  # (SUPER + /) match the bar and lock screen.
+  # -----------------------------------------------------
+  environment.etc."xdg/hypr/hyprtoolkit.conf".text = ''
+    background = 0xFF${colors.bg}
+    base = 0xFF202020
+    alternate_base = 0xFF272727
+    text = 0xFFd0d0d8
+    bright_text = 0xFFffffff
+    accent = 0xFF${colors.blue}
+    accent_secondary = 0xFF${colors.cyan}
+    h1_size = 19
+    h2_size = 15
+    h3_size = 13
+    font_size = 12
+    small_font_size = 10
+    font_family = Noto Sans
+    font_family_monospace = monospace
+    rounding_large = 8
+    rounding_small = 4
+  '';
+
+  environment.etc."xdg/hypr/hyprlauncher.conf".text = ''
+    general {
+        grab_focus = true
+    }
+
+    cache {
+        enabled = true
+    }
+
+    finders {
+        default_finder = desktop
+        math_prefix = =
+        font_prefix = '
+        desktop_terminal = foot
+        desktop_icons = true
+    }
+
+    ui {
+        window_size = 680 460
     }
   '';
 

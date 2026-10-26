@@ -8,15 +8,15 @@
 # and a TUI that exits on its own (cal, and anything that reads stdin
 # until EOF) flickers away before it can be read.
 #
-# So the detail is shown in a wofi dropdown instead: it opens already
-# positioned under the bar, and Escape closes it. Each segment gets its
+# So the detail is shown in a hyprlauncher dropdown instead: it opens
+# immediately over the desktop, and Escape closes it. Each segment gets its
 # own content, so CPU and memory no longer open the same program.
 #
-#   --section net|disk|cpu|mem|time   which panel to show (default net)
-#   --list                           print the entries instead of showing
-#                                   them; used by the build-time check
-#   --dry-run                        print the wofi command line instead
-#                                   of running it
+#   --section net|disk|cpu|mem|time|binds  which panel to show (default net)
+#   --list                                 print the entries instead of showing
+#                                          them; used by the build-time check
+#   --dry-run                              print the hyprlauncher command line
+#                                          instead of running it
 #
 # As with status-line.sh, probe failures are normal and must not abort
 # anything, so -e is deliberately not set.
@@ -323,6 +323,74 @@ panel_time() {
     "$(span "$WM_C_FG" "${SHELL##*/}")"
 }
 
+bind_row() {
+  local key="$1" desc="$2"
+  printf '  <tt><span foreground="%s">%-24s</span></tt> <span foreground="%s">%s</span>\n' \
+    "$WM_C_CYAN" "$(esc "$key")" \
+    "$WM_C_FG" "$(esc "$desc")"
+}
+
+bind_hdr() {
+  printf '<span foreground="%s" weight="bold">── %s ──</span>\n' "$WM_C_BLUE" "$(esc "$1")"
+}
+
+panel_binds() {
+  bind_hdr "Launchers & Menus"
+  bind_row "SUPER + Return"         "Open terminal (foot)"
+  bind_row "SUPER + Space / D"      "Toggle app launcher (hyprlauncher)"
+  bind_row "SUPER + ALT + Space"    "Open math / calc finder (hyprlauncher)"
+  bind_row "SUPER + /"              "Show this keybindings cheat sheet"
+
+  bind_hdr "TUI Utilities"
+  bind_row "SUPER + CTRL + Return"  "Launch tmux session"
+  bind_row "SUPER + CTRL + T"       "Launch btop system monitor"
+  bind_row "SUPER + SHIFT + F"      "Launch yazi file manager"
+  bind_row "SUPER + SHIFT + D"      "Launch lazydocker"
+  bind_row "SUPER + SHIFT + ALT + M" "Launch cliamp music player"
+  bind_row "SUPER + CTRL + W"       "Network status (networkctl)"
+  bind_row "SUPER + CTRL + B"       "Bluetooth console (bluetoothctl)"
+
+  bind_hdr "Window Management"
+  bind_row "SUPER + Q / W / X"      "Close active window"
+  bind_row "SUPER + SHIFT + Q"      "Close active window"
+  bind_row "SUPER + T"              "Toggle floating window"
+  bind_row "SUPER + SHIFT + Space"  "Toggle floating window"
+  bind_row "SUPER + F"              "Toggle fullscreen"
+  bind_row "SUPER + ALT + F"        "Toggle maximize (keep bar/gaps)"
+  bind_row "SUPER + CTRL + F"       "Force internal + client fullscreen"
+  bind_row "SUPER + O"              "Pin floating window on all workspaces"
+  bind_row "SUPER + Left-Drag"      "Move window with mouse"
+  bind_row "SUPER + Right-Drag"     "Resize window with mouse"
+
+  bind_hdr "Focus & Swap"
+  bind_row "SUPER + H / J / K / L"  "Focus window left / down / up / right"
+  bind_row "SUPER + Arrow Keys"     "Focus window left / down / up / right"
+  bind_row "SUPER + SHIFT + H/J/K/L" "Swap window left / down / up / right"
+  bind_row "SUPER + SHIFT + ← / →"  "Swap window left / right"
+
+  bind_hdr "Groups (Tabbed Windows)"
+  bind_row "SUPER + G"              "Toggle window group (tabs)"
+  bind_row "SUPER + ALT + G"        "Move active window out of group"
+  bind_row "SUPER + CTRL + ← / →"   "Switch to prev / next window in group"
+
+  bind_hdr "Workspaces"
+  bind_row "SUPER + 1..9, 0"        "Switch to workspace 1..10"
+  bind_row "SUPER + SHIFT + 1..9, 0" "Move window to workspace 1..10 & follow"
+  bind_row "SUPER + ALT + 1..9, 0"  "Send window to workspace 1..10 silently"
+
+  bind_hdr "System, Appearance & Media"
+  bind_row "SUPER + A"              "GTK & cursor theme settings (nwg-look)"
+  bind_row "SUPER + C"              "Reset cursor to stock blue Hyprland arrow"
+  bind_row "SUPER + SHIFT + S"      "Region screenshot to ~/Pictures & clipboard"
+  bind_row "Print"                  "Region screenshot to ~/Pictures & clipboard"
+  bind_row "SUPER + ALT + L"        "Lock screen (hyprlock)"
+  bind_row "CTRL + ALT + Delete"    "Exit Hyprland session"
+  bind_row "XF86AudioRaise/Lower"   "Volume +5% / -5% (wpctl)"
+  bind_row "XF86AudioMute"          "Toggle audio mute"
+  bind_row "XF86AudioPlay/Next/Prev" "Media play-pause / next / previous"
+  bind_row "XF86MonBrightnessUp/Dn" "Screen brightness +5% / -5%"
+}
+
 # ---------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------
@@ -340,7 +408,7 @@ while [ $# -gt 0 ]; do
     --list) LIST_ONLY=1 ;;
     --dry-run) DRY_RUN=1 ;;
     -h | --help)
-      printf 'usage: %s [--section net|disk|cpu|mem|time] [--list] [--dry-run]\n' \
+      printf 'usage: %s [--section net|disk|cpu|mem|time|binds] [--list] [--dry-run]\n' \
         "$(basename "$0")"
       exit 0
       ;;
@@ -359,6 +427,7 @@ render_panel() {
     cpu) panel_cpu ;;
     mem) panel_mem ;;
     time) panel_time ;;
+    binds) panel_binds ;;
     *)
       printf 'wm-panel: unknown section %s\n' "$SECTION" >&2
       exit 2
@@ -367,11 +436,10 @@ render_panel() {
 }
 
 # Rendered once, up front. The content is captured rather than streamed
-# so it can be fed to wofi below: wofi in dmenu mode reads its list on
-# stdin, so printing the panel and then exec'ing wofi would send the
-# panel to the caller and leave wofi waiting on the wrong file
-# descriptor.
-PANEL_CONTENT=$(render_panel)
+# so it can be fed to hyprlauncher below: hyprlauncher in dmenu mode
+# reads its list on stdin (filtering out empty lines so every entry
+# renders as a clean row).
+PANEL_CONTENT=$(render_panel | awk 'NF > 0')
 
 if [ "$LIST_ONLY" = "1" ]; then
   printf '%s\n' "$PANEL_CONTENT"
@@ -381,117 +449,58 @@ fi
 # ---------------------------------------------------------------------
 # Presentation
 #
-# wofi in dmenu mode is used purely as a surface: entries in, nothing
-# submitted. --no-custom-entry and --hide-search keep it from looking
-# like a launcher, and it stays open until Escape.
+# hyprlauncher in dmenu mode (-m / --dmenu) sends the newline-separated
+# entries over hyprwire IPC to the running hyprlauncher daemon (or opens
+# directly if no daemon is running), rendering Pango markup natively via
+# hyprtoolkit.
 # ---------------------------------------------------------------------
-PANEL_WIDTH=560
-PANEL_MAX_LINES=22
+LAUNCHER="${WM_PANEL_LAUNCHER:-hyprlauncher}"
 
-# Waybar's on-click gives a handler no pointer position, so the panel
-# cannot be pinned to the segment that was clicked. It is anchored to
-# the top of the focused monitor and centred horizontally, which puts it
-# directly under the bar rather than in the middle of the screen: with no
-# --location wofi centres vertically, and --xoffset/--yoffset are then
-# applied from that centre, so the y offset has to be a real anchor to be
-# the 34px under the bar that is wanted here.
-PANEL_X="${WM_PANEL_X:-0}"
-PANEL_Y="${WM_PANEL_Y:-34}"
-
-# Resolved at build time by the Nix wrapper, so a missing wofi fails the
-# build rather than making every click a no-op.
-WOFI="${WM_PANEL_WOFI:-wofi}"
-
-if ! [ -x "$WOFI" ] && ! command -v "$WOFI" >/dev/null 2>&1; then
-  printf 'wm-panel: wofi not found at %s\n' "$WOFI" >&2
+if ! [ -x "$LAUNCHER" ] && ! command -v "$LAUNCHER" >/dev/null 2>&1; then
+  printf 'wm-panel: hyprlauncher not found at %s\n' "$LAUNCHER" >&2
   exit 127
 fi
 
-# Height follows the content instead of being a fixed 22 rows, so the
-# short panels (the calendar) do not open as a mostly-empty box.
-PANEL_LINES=$(printf '%s\n' "$PANEL_CONTENT" | wc -l | tr -d ' ')
-[ "$PANEL_LINES" -gt 0 ] 2>/dev/null || PANEL_LINES=8
-[ "$PANEL_LINES" -gt "$PANEL_MAX_LINES" ] && PANEL_LINES=$PANEL_MAX_LINES
-
-# wofi has no single-instance behaviour in dmenu mode. Clicking a second
-# segment while a panel is open would stack a second window in exactly the
-# same spot, and closing the top one would reveal a stale panel that is
-# still holding keyboard focus and still showing old numbers. So before
-# opening, any panel we opened earlier is closed first.
-#
-# The pid is validated against /proc before it is signalled: a pidfile left
-# behind by a crashed panel can name a pid that the kernel has since handed
-# to something unrelated, and this script is being run from a click handler.
-PANEL_PID_FILE="$STATE_DIR/panel.pid"
-
-close_open_panel() {
-  local pid cmd waited=0
-  [ -r "$PANEL_PID_FILE" ] || return 0
-  pid=$(cat "$PANEL_PID_FILE" 2>/dev/null) || pid=""
-  case "$pid" in
-    '' | *[!0-9]*)
-      rm -f "$PANEL_PID_FILE"
-      return 0
-      ;;
-  esac
-  if ! kill -0 "$pid" 2>/dev/null; then
-    rm -f "$PANEL_PID_FILE"
-    return 0
-  fi
-  cmd=$(tr '\0' ' ' <"/proc/$pid/cmdline" 2>/dev/null) || cmd=""
-  case "$cmd" in
-    # Not one of ours: the pid was recycled, so the file is simply stale.
-    *wofi-panel-style*) kill "$pid" 2>/dev/null ;;
-    *)
-      rm -f "$PANEL_PID_FILE"
-      return 0
-      ;;
-  esac
-  # Wait for it to unmap its layer surface, so the old one is not still on
-  # screen behind the new one.
-  while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt 20 ]; do
-    sleep 0.05
-    waited=$((waited + 1))
-  done
-  kill -9 "$pid" 2>/dev/null
-  rm -f "$PANEL_PID_FILE"
-}
-
 if [ "$DRY_RUN" = "1" ]; then
-  printf '%s \\\n' "$WOFI" \
-    --dmenu --allow-markup --no-custom-entry --hide-search --hide-scroll \
-    --location top --width "$PANEL_WIDTH" --lines "$PANEL_LINES" \
-    --xoffset "$PANEL_X" --yoffset "$PANEL_Y" --gtk-dark
+  printf '%s --dmenu\n' "$LAUNCHER"
   exit 0
 fi
 
-# --allow-markup is what lets the panels above use colour; --dmenu makes
-# wofi read the list on stdin instead of showing its own modes. The
-# captured panel is piped in, and the script exits with wofi's status.
-# No --normal-window: it is a layer-shell surface, so it behaves like a
-# dropdown (anchored, above other windows, no taskbar entry) rather than
-# a floating window that has to be given focus.
+run_bind_selection() {
+  local sel="$1"
+  [ -n "$sel" ] || return 0
+  case "$sel" in
+    *"Open terminal (foot)"*)               exec foot ;;
+    *"Toggle app launcher"*)                exec hyprlauncher -t ;;
+    *"Open math / calc finder"*)            exec hyprlauncher -f math ;;
+    *"Launch tmux session"*)                exec foot -e tmux ;;
+    *"Launch btop system monitor"*)         exec foot -e btop ;;
+    *"Launch yazi file manager"*)           exec foot -e yazi ;;
+    *"Launch lazydocker"*)                  exec foot -e lazydocker ;;
+    *"Launch cliamp music player"*)         exec foot -e cliamp ;;
+    *"Network status (networkctl)"*)        exec foot -e sh -c 'networkctl status; read -r -p "Press Enter to close..."' ;;
+    *"Bluetooth console (bluetoothctl)"*)   exec foot -e bluetoothctl ;;
+    *"Close active window"*)                exec hyprctl dispatch 'hl.dsp.window.close()' ;;
+    *"Toggle floating window"*)             exec hyprctl dispatch 'hl.dsp.window.float({ action = "toggle" })' ;;
+    *"Toggle fullscreen"*)                  exec hyprctl dispatch 'hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })' ;;
+    *"Toggle maximize"*)                    exec hyprctl dispatch 'hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" })' ;;
+    *"Force internal + client fullscreen"*) exec hyprctl dispatch 'hl.dsp.window.fullscreen_state({ action = "set", internal = 1, client = 1 })' ;;
+    *"Pin floating window"*)                exec hyprctl dispatch 'hl.dsp.window.pin({ action = "toggle" })' ;;
+    *"Toggle window group (tabs)"*)         exec hyprctl dispatch 'hl.dsp.group.toggle()' ;;
+    *"Move active window out of group"*)    exec hyprctl dispatch 'hl.dsp.window.move({ out_of_group = true })' ;;
+    *"GTK &amp; cursor theme settings"*|*"GTK & cursor theme settings"*) exec nwg-look ;;
+    *"Region screenshot"*)                  exec bash -c 'FILE=~/Pictures/Screenshot_$(date +%Y%m%d_%H%M%S).png; grim -g "$(slurp)" "$FILE" && wl-copy < "$FILE"' ;;
+    *"Lock screen (hyprlock)"*)             exec hyprlock ;;
+    *"Exit Hyprland session"*)              exec hyprctl dispatch 'hl.dsp.exit()' ;;
+    *"Toggle audio mute"*)                  exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+    *"Media play-pause"*)                   exec playerctl play-pause ;;
+  esac
+}
+
 mkdir -p "$STATE_DIR" 2>/dev/null
-close_open_panel
-printf '%s\n' "$PANEL_CONTENT" | "$WOFI" \
-  --dmenu \
-  --allow-markup \
-  --no-custom-entry \
-  --hide-search \
-  --hide-scroll \
-  --location top \
-  --width "$PANEL_WIDTH" \
-  --lines "$PANEL_LINES" \
-  --xoffset "$PANEL_X" \
-  --yoffset "$PANEL_Y" \
-  --gtk-dark &
-WOFI_PID=$!
-printf '%s\n' "$WOFI_PID" >"$PANEL_PID_FILE" 2>/dev/null
-wait "$WOFI_PID"
+SELECTED=$(printf '%s\n' "$PANEL_CONTENT" | "$LAUNCHER" --dmenu)
 STATUS=$?
-# Only clear the file if it is still ours: a panel opened in the meantime
-# will have overwritten it, and removing that would orphan it.
-if [ "$(cat "$PANEL_PID_FILE" 2>/dev/null)" = "$WOFI_PID" ]; then
-  rm -f "$PANEL_PID_FILE" 2>/dev/null
+if [ "$STATUS" -eq 0 ] && [ "$SECTION" = "binds" ] && [ -n "$SELECTED" ]; then
+  run_bind_selection "$SELECTED"
 fi
 exit "$STATUS"

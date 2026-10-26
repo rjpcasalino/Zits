@@ -29,7 +29,7 @@ def main():
 
     input_str = '\n'.join(windows)
     try:
-        proc = subprocess.Popen(['wofi', '--dmenu', '-p', 'windows:'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        proc = subprocess.Popen(['hyprlauncher', '--dmenu'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         selected, _ = proc.communicate(input=input_str)
         if selected and 'id=' in selected:
             con_id = selected.strip().split('id=')[-1]

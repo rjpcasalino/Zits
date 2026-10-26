@@ -44,7 +44,7 @@ in
       gammastep
       mpvpaper
       awww
-    ] ++ [ wm.wofi wm.nwgDock wm.statusBar ] ++ wm.statusRuntimeDeps;
+    ] ++ [ wm.launcher wm.nwgDock wm.statusBar ] ++ wm.statusRuntimeDeps;
   };
 
   # Direct system /etc/sway/config to use /etc/nixos/sway.conf
@@ -70,7 +70,7 @@ in
     set $up k
     set $right l
     set $term foot
-    set $menu wofi --show drun
+    set $menu hyprlauncher -t
 
     ### Night Light / Redshift Alternative (Gammastep)
     exec gammastep -l 47.47:-122.27 -t 6500:3500
@@ -87,7 +87,7 @@ in
     bindsym $mod+Shift+equal floating disable
     bindsym $mod+Shift+plus floating disable
     bindsym $mod+Return exec $term
-    bindsym Control+$mod+Return exec wofi --show run
+    bindsym Control+$mod+Return exec hyprlauncher -t
     bindsym $mod+Shift+q kill
     bindsym $mod+d exec $menu
     floating_modifier $mod normal
