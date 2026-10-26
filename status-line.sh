@@ -176,11 +176,18 @@ collect() {
   # --- volume ---
   VOL_RAW=$(wpctl get-volume @DEFAULT_SINK@ 2>/dev/null)
   if [ -n "$VOL_RAW" ]; then
-    VOL=$(printf '%s' "$VOL_RAW" | awk '{print int($2 * 100)"%"}')
+    VOL_PCT=$(printf '%s' "$VOL_RAW" | awk '{print int($2 * 100)"%"}')
+    SINK_NAME=$(wpctl inspect @DEFAULT_SINK@ 2>/dev/null | awk -F'"' '/node\.name/ {print $2; exit}')
+    case "${SINK_NAME:-}" in
+      *usb*)   SINK_TAG=" [USB]" ;;
+      *bluez*) SINK_TAG=" [BT]" ;;
+      *pci*)   SINK_TAG=" [RCV]" ;;
+      *)       SINK_TAG="" ;;
+    esac
     if [[ "$VOL_RAW" == *"[MUTED]"* ]]; then
-      VOL=$(span "$WM_C_RED" "${VOL} (MUTED)")
+      VOL=$(span "$WM_C_RED" "${VOL_PCT}${SINK_TAG} (MUTED)")
     else
-      VOL=$(span "$WM_C_FG" "$VOL")
+      VOL=$(span "$WM_C_FG" "${VOL_PCT}${SINK_TAG}")
     fi
   else
     VOL=$(span "$WM_C_DIM" "N/A")

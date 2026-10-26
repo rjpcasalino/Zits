@@ -365,6 +365,36 @@
         };
       };
     };
+    wireplumber.extraConfig."51-audio-defaults" = {
+      "monitor.alsa.rules" = [
+        {
+          matches = [
+            { "node.name" = "alsa_output.usb-Jieli_Technology_USB_Composite_Device_4250315A35353802-01.analog-stereo"; }
+          ];
+          actions = {
+            update-props = {
+              "node.description" = "USB Speakers";
+              "node.nick" = "USB Speakers";
+              "priority.driver" = 1500;
+              "priority.session" = 1500;
+            };
+          };
+        }
+        {
+          matches = [
+            { "node.name" = "alsa_output.pci-0000_0f_00.4.analog-stereo"; }
+          ];
+          actions = {
+            update-props = {
+              "node.description" = "Receiver (Mini-Jack)";
+              "node.nick" = "Receiver";
+              "priority.driver" = 1000;
+              "priority.session" = 1000;
+            };
+          };
+        }
+      ];
+    };
   };
   # #
 

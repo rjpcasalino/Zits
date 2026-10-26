@@ -12,7 +12,7 @@
 # immediately over the desktop, and Escape closes it. Each segment gets its
 # own content, so CPU and memory no longer open the same program.
 #
-#   --section net|disk|cpu|mem|time|binds  which panel to show (default net)
+#   --section net|disk|cpu|mem|vol|time|binds  which panel to show (default net)
 #   --list                                 print the entries instead of showing
 #                                          them; used by the build-time check
 #   --dry-run                              print the hyprlauncher command line
@@ -304,6 +304,83 @@ panel_mem() {
     done
 }
 
+panel_vol() {
+  printf '<span foreground="%s" size="large">Audio Output</span>\n' "$WM_C_CYAN"
+
+  local vol_raw vol_pct
+  vol_raw=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null || true)
+  if [ -n "$vol_raw" ]; then
+    vol_pct=$(printf '%s' "$vol_raw" | awk '{print int($2 * 100)}')
+    if [[ "$vol_raw" == *"[MUTED]"* ]]; then
+      printf '  %s %s\n' "$(span "$WM_C_DIM" 'volume:')" "$(span "$WM_C_RED" "${vol_pct}% (MUTED)")"
+    else
+      printf '  %s %s\n' "$(span "$WM_C_DIM" 'volume:')" "$(span "$WM_C_FG" "${vol_pct}%")"
+    fi
+    printf '  %s\n' "$(bar "${vol_pct:-0}")"
+  else
+    printf '  <span foreground="%s">no active audio sink</span>\n' "$WM_C_DIM"
+  fi
+
+  printf '\n  %s\n' "$(span "$WM_C_DIM" 'select output sink (Enter to switch)')"
+  local sinks_found=0
+  local line
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    sinks_found=1
+    local is_def=" "
+    case "$line" in
+      *"*"*) is_def="*" ;;
+    esac
+    local rest="${line#*"*"}"
+    [ "$rest" = "$line" ] && rest="$line"
+    rest=$(printf '%s' "$rest" | sed -e 's/^[[:space:]│├─└]*//')
+    local id="${rest%%.*}"
+    local after_id="${rest#*. }"
+    local name="${after_id% \[vol:*}"
+    name=$(printf '%s' "$name" | sed -e 's/[[:space:]]*$//')
+    local vol=""
+    case "$after_id" in
+      *"[vol:"*)
+        vol="${after_id##*\[vol: }"
+        vol="${vol%\]*}"
+        vol=$(printf '%s' "$vol" | awk '{printf "%d%%", int($1 * 100)}')
+        ;;
+    esac
+
+    local label="$name"
+    local node_name
+    node_name=$(wpctl inspect "$id" 2>/dev/null | awk -F'"' '/node\.name/ {print $2; exit}')
+    case "${node_name:-$name}" in
+      *usb*|*"USB Composite"*) label="USB Speakers ($name)" ;;
+      *bluez*)                 label="Bluetooth ($name)" ;;
+      *pci*|*"Starship"*)      label="Receiver — Mini-Jack ($name)" ;;
+    esac
+
+    if [ "$is_def" = "*" ]; then
+      printf '    <span foreground="%s">● [%s] %s</span> %s\n' \
+        "$WM_C_GREEN" "$id" "$(esc "$label")" "$(span "$WM_C_DIM" "${vol} [active]")"
+    else
+      printf '    <span foreground="%s">○ [%s] %s</span> %s\n' \
+        "$WM_C_FG" "$id" "$(esc "$label")" "$(span "$WM_C_DIM" "${vol}")"
+    fi
+  done < <(wpctl status 2>/dev/null | awk '
+    /^Audio/ { in_audio=1; next }
+    /^(Video|Settings)/ { in_audio=0 }
+    in_audio && /Sinks:/ { in_sinks=1; next }
+    in_audio && in_sinks && /(Sources:|Filters:|Streams:)/ { in_sinks=0 }
+    in_audio && in_sinks && /[0-9]+\./ { print }
+  ')
+
+  if [ "$sinks_found" = "0" ]; then
+    printf '    <span foreground="%s">no PipeWire sinks detected</span>\n' "$WM_C_DIM"
+  fi
+
+  printf '\n  %s\n' "$(span "$WM_C_DIM" 'quick actions')"
+  printf '    <span foreground="%s">⇄  Toggle USB Speakers ↔ Receiver</span>\n' "$WM_C_CYAN"
+  printf '    <span foreground="%s">🔇 Toggle Mute</span>\n' "$WM_C_YELLOW"
+  printf '    <span foreground="%s">  Bluetooth Console (bluetoothctl)</span>\n' "$WM_C_BLUE"
+}
+
 panel_time() {
   printf '<span foreground="%s" size="large">%s</span>\n' "$WM_C_FG" "$(date +'%A, %d %B %Y %I:%M:%S %p')"
 
@@ -385,6 +462,8 @@ panel_binds() {
   bind_row "Print"                  "Region screenshot to ~/Pictures & clipboard"
   bind_row "SUPER + ALT + L"        "Lock screen (hyprlock)"
   bind_row "CTRL + ALT + Delete"    "Exit Hyprland session"
+  bind_row "SUPER + V"              "Audio output switcher / volume panel"
+  bind_row "SUPER + SHIFT + V"      "Toggle USB Speakers ↔ Receiver"
   bind_row "XF86AudioRaise/Lower"   "Volume +5% / -5% (wpctl)"
   bind_row "XF86AudioMute"          "Toggle audio mute"
   bind_row "XF86AudioPlay/Next/Prev" "Media play-pause / next / previous"
@@ -408,7 +487,7 @@ while [ $# -gt 0 ]; do
     --list) LIST_ONLY=1 ;;
     --dry-run) DRY_RUN=1 ;;
     -h | --help)
-      printf 'usage: %s [--section net|disk|cpu|mem|time|binds] [--list] [--dry-run]\n' \
+      printf 'usage: %s [--section net|disk|cpu|mem|vol|time|binds] [--list] [--dry-run]\n' \
         "$(basename "$0")"
       exit 0
       ;;
@@ -426,6 +505,7 @@ render_panel() {
     disk) panel_disk ;;
     cpu) panel_cpu ;;
     mem) panel_mem ;;
+    vol) panel_vol ;;
     time) panel_time ;;
     binds) panel_binds ;;
     *)
@@ -492,15 +572,43 @@ run_bind_selection() {
     *"Region screenshot"*)                  exec bash -c 'FILE=~/Pictures/Screenshot_$(date +%Y%m%d_%H%M%S).png; grim -g "$(slurp)" "$FILE" && wl-copy < "$FILE"' ;;
     *"Lock screen (hyprlock)"*)             exec hyprlock ;;
     *"Exit Hyprland session"*)              exec hyprctl dispatch 'hl.dsp.exit()' ;;
+    *"Audio output switcher"*)              exec "$0" --section vol ;;
+    *"Toggle USB Speakers"*)                exec audio-switch toggle ;;
     *"Toggle audio mute"*)                  exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
     *"Media play-pause"*)                   exec playerctl play-pause ;;
+  esac
+}
+
+run_vol_selection() {
+  local sel="$1"
+  [ -n "$sel" ] || return 0
+  case "$sel" in
+    *"["*"]"*)
+      local id
+      id=$(printf '%s' "$sel" | sed -n 's/.*\[\([0-9][0-9]*\)\].*/\1/p')
+      if [ -n "$id" ]; then
+        exec wpctl set-default "$id"
+      fi
+      ;;
+    *"Toggle USB Speakers"*)
+      exec audio-switch toggle
+      ;;
+    *"Toggle Mute"*)
+      exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+      ;;
+    *"Bluetooth Console"*)
+      exec foot -e bluetoothctl
+      ;;
   esac
 }
 
 mkdir -p "$STATE_DIR" 2>/dev/null
 SELECTED=$(printf '%s\n' "$PANEL_CONTENT" | "$LAUNCHER" --dmenu)
 STATUS=$?
-if [ "$STATUS" -eq 0 ] && [ "$SECTION" = "binds" ] && [ -n "$SELECTED" ]; then
-  run_bind_selection "$SELECTED"
+if [ "$STATUS" -eq 0 ] && [ -n "$SELECTED" ]; then
+  case "$SECTION" in
+    binds) run_bind_selection "$SELECTED" ;;
+    vol)   run_vol_selection "$SELECTED" ;;
+  esac
 fi
 exit "$STATUS"

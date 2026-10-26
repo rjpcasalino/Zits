@@ -29,6 +29,9 @@
       "ll" = "ls -l";
       "ls" = "ls --color=auto";
       "nd" = "nix develop";
+      "speakers" = "audio-switch speakers";
+      "receiver" = "audio-switch receiver";
+      "audio-toggle" = "audio-switch toggle";
       "zits" = "sudo nixos-rebuild switch --flake .#zits";
     };
 

@@ -23,6 +23,8 @@ let
   # has to be passed explicitly: getExe' cannot infer it for a runCommand.
   swayWindowSwitcherBin = lib.getExe' swayWindowSwitcher "sway-window-switcher";
   wallpaperChangerBin = lib.getExe' wallpaperChanger "wallpaper-changer";
+  panelBin = lib.getExe' wm.panel "wm-panel";
+  audioSwitchBin = lib.getExe' wm.audioSwitch "audio-switch";
 in
 
 {
@@ -194,6 +196,8 @@ in
     bindsym $mod+r mode "resize"
 
     # Utilities:
+    bindsym $mod+Shift+v exec ${audioSwitchBin} toggle
+    bindsym $mod+Control+v exec ${panelBin} --section vol
     bindsym --locked XF86AudioMute exec wpctl set-mute \@DEFAULT_AUDIO_SINK@ toggle
     bindsym --locked XF86AudioLowerVolume exec wpctl set-volume \@DEFAULT_AUDIO_SINK@ 5%-
     bindsym --locked XF86AudioRaiseVolume exec wpctl set-volume \@DEFAULT_AUDIO_SINK@ 5%+

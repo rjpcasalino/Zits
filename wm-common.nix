@@ -121,7 +121,7 @@ let
       # Rendered text must not be stored in `out`: that is the build's
       # output path, and overwriting it breaks every later invocation and
       # the final install. (This exact mistake has now been made twice.)
-      for section in net disk cpu mem time binds; do
+      for section in net disk cpu mem vol time binds; do
         rendered=$("$out/bin/wm-panel" --section "$section" --list 2>/dev/null)
         if [ -z "$rendered" ]; then
           echo "wm-panel: section $section rendered nothing" >&2
@@ -229,6 +229,115 @@ let
     '';
 
   wallpaperChanger = installScript "wallpaper-changer" ./wallpaper-changer.pl;
+
+  audioSwitchScript = pkgs.writeShellScriptBin "audio-switch" ''
+    set -uo pipefail
+    export PATH="${pkgs.wireplumber}/bin:${pkgs.gawk}/bin:${pkgs.gnused}/bin:${pkgs.gnugrep}/bin:${pkgs.coreutils}/bin:''${PATH:-/run/current-system/sw/bin}"
+
+    find_sink_id() {
+      local pattern="$1"
+      local line id node_name
+      while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        local rest="''${line#*"*"}"
+        [ "$rest" = "$line" ] && rest="$line"
+        rest=$(printf '%s' "$rest" | sed -e 's/^[[:space:]│├─└]*//')
+        id="''${rest%%.*}"
+        node_name=$(wpctl inspect "$id" 2>/dev/null | awk -F'"' '/node\.name/ {print $2; exit}')
+        if printf '%s\n%s\n' "$node_name" "$rest" | grep -qiE "$pattern"; then
+          printf '%s' "$id"
+          return 0
+        fi
+      done < <(wpctl status 2>/dev/null | awk '
+        /^Audio/ { in_audio=1; next }
+        /^(Video|Settings)/ { in_audio=0 }
+        in_audio && /Sinks:/ { in_sinks=1; next }
+        in_audio && in_sinks && /(Sources:|Filters:|Streams:)/ { in_sinks=0 }
+        in_audio && in_sinks && /[0-9]+\./ { print }
+      ')
+      return 1
+    }
+
+    current_sink_name() {
+      wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk -F'"' '/node\.name/ {print $2; exit}'
+    }
+
+    current_sink_desc() {
+      wpctl inspect @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk -F'"' '/node\.description/ {print $2; exit}'
+    }
+
+    cmd="''${1:-toggle}"
+    case "$cmd" in
+      speakers|usb)
+        if id=$(find_sink_id "usb|Jieli"); then
+          wpctl set-default "$id"
+          echo "Switched audio output to: USB Speakers (sink $id)"
+        else
+          echo "Error: USB Speakers sink not found" >&2
+          exit 1
+        fi
+        ;;
+      receiver|rcv|jack|pci)
+        if id=$(find_sink_id "pci-0000_0f_00\.4|Starship|ALC897|Receiver"); then
+          wpctl set-default "$id"
+          echo "Switched audio output to: Receiver [Mini-Jack] (sink $id)"
+        else
+          echo "Error: Receiver (Mini-Jack) sink not found" >&2
+          exit 1
+        fi
+        ;;
+      bt|bluetooth)
+        if id=$(find_sink_id "bluez"); then
+          wpctl set-default "$id"
+          echo "Switched audio output to: Bluetooth (sink $id)"
+        else
+          echo "Error: No connected Bluetooth audio sink found" >&2
+          exit 1
+        fi
+        ;;
+      toggle)
+        cur=$(current_sink_name)
+        case "$cur" in
+          *usb*)
+            exec "$0" receiver
+            ;;
+          *)
+            exec "$0" speakers
+            ;;
+        esac
+        ;;
+      status|list)
+        echo "Default output: $(current_sink_desc) [$(current_sink_name)]"
+        echo ""
+        wpctl status | awk '
+          /^Audio/ { in_audio=1; next }
+          /^(Video|Settings)/ { in_audio=0 }
+          in_audio && /Sinks:/ { in_sinks=1; print "Available Sinks:"; next }
+          in_audio && in_sinks && /(Sources:|Filters:|Streams:)/ { in_sinks=0 }
+          in_audio && in_sinks && NF { print }
+        '
+        ;;
+      menu|panel)
+        exec ${panelScript}/bin/wm-panel --section vol
+        ;;
+      -h|--help|help)
+        echo "Usage: audio-switch [speakers|receiver|bt|toggle|status|menu]"
+        echo ""
+        echo "Commands:"
+        echo "  speakers   Switch to USB Speakers (default)"
+        echo "  receiver   Switch to Receiver (Mini-Jack)"
+        echo "  bt         Switch to connected Bluetooth sink"
+        echo "  toggle     Toggle between USB Speakers and Receiver"
+        echo "  status     Show current default sink and all available sinks"
+        echo "  menu       Open interactive audio output picker (wm-panel)"
+        ;;
+      *)
+        echo "Unknown command: $cmd" >&2
+        echo "Usage: audio-switch [speakers|receiver|bt|toggle|status|menu]" >&2
+        exit 2
+        ;;
+    esac
+  '';
 in
 {
   options.wayland = {
@@ -268,7 +377,15 @@ in
       description = ''
         Dropdown shown when a bar segment is clicked (or when the keybindings
         cheat sheet is opened), rendered with hyprlauncher in dmenu mode.
-        Takes --section net|disk|cpu|mem|time|binds.
+        Takes --section net|disk|cpu|mem|vol|time|binds.
+      '';
+    };
+
+    audioSwitch = lib.mkOption {
+      type = lib.types.package;
+      description = ''
+        Helper script (audio-switch) to switch PipeWire default sink between
+        USB Speakers, Receiver (Mini-Jack), and Bluetooth.
       '';
     };
 
@@ -291,6 +408,7 @@ in
       launcher = pkgs.hyprlauncher;
       nwgDock = themedNwgDock;
       wallpaperChanger = wallpaperChanger;
+      audioSwitch = audioSwitchScript;
       statusRuntimeDeps = statusRuntimeDeps;
     };
 
@@ -300,6 +418,7 @@ in
       config.wayland.panel
       config.wayland.launcher
       config.wayland.wallpaperChanger
+      config.wayland.audioSwitch
     ];
   };
 }

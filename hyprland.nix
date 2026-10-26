@@ -8,6 +8,7 @@ let
   # The dropdown behind each bar segment. Absolute path because waybar
   # runs on-click through `sh -c` with the unit's minimal PATH.
   panel = lib.getExe' wm.panel "wm-panel";
+  audioSwitchBin = lib.getExe' wm.audioSwitch "audio-switch";
 
   # Volume is the one segment that acts rather than displays, so it keeps
   # its real handlers. Everything else shows a panel instead.
@@ -91,7 +92,9 @@ let
         "interval": 2,
         "restart-interval": 5,
         "max-length": 60,
-        "on-click": "${wpctlBin} set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "on-click": "${panel} --section vol",
+        "on-click-right": "${audioSwitchBin} toggle",
+        "on-click-middle": "${wpctlBin} set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "on-scroll-up": "${wpctlBin} set-volume @DEFAULT_AUDIO_SINK@ 5%+",
         "on-scroll-down": "${wpctlBin} set-volume @DEFAULT_AUDIO_SINK@ 5%-"
       },
@@ -846,6 +849,8 @@ EOF
     hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
     -- Media and brightness.
+    hl.bind(mainMod .. " + V",         hl.dsp.exec_cmd("${panel} --section vol"))
+    hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("${audioSwitchBin} toggle"))
     hl.bind("XF86AudioRaiseVolume",   hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
     hl.bind("XF86AudioLowerVolume",   hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), { locked = true, repeating = true })
     hl.bind("XF86AudioMute",          hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"))
