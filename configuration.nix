@@ -279,6 +279,7 @@
   # #
 
   # Networking #
+  networking.useNetworkd = true;
   systemd.network.enable = true;
   systemd.network.wait-online.enable = false;
   networking.interfaces.enp13s0f2u1u1.useDHCP = true;
